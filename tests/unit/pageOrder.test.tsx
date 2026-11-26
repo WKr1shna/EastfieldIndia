@@ -5,7 +5,7 @@ import { InquiryProvider } from "@/components/ui/InquiryContext";
 import HomePage from "@/app/page";
 
 describe("HomePage narrative section order", () => {
-  it("places Why Makhana and Makhana Grades before Surya Alok Founder Story", () => {
+  it("places Founder Story immediately below Procurement Process and before Request a Sample CTA", () => {
     const { container } = render(
       <InquiryProvider disableAutoEntryPopup>
         <HomePage />
@@ -20,10 +20,10 @@ describe("HomePage narrative section order", () => {
       "sourcing",
       "why-makhana",
       "makhana",
-      "founder",
       "buyers",
       "quality",
       "procurement",
+      "founder",
       "inquiry",
     ]);
   });

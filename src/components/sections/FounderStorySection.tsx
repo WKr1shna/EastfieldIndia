@@ -1,97 +1,134 @@
+"use client";
+
 import React from "react";
-import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function FounderStorySection() {
+  const { openSampleRequest } = useInquiryPreset();
+
   return (
-    <section id="founder" className="border-b border-forest-900/10 py-16 sm:py-24">
+    <section
+      id="founder"
+      className="border-b border-forest-900/10 py-20 sm:py-28"
+    >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-        {/* Elevated warm-ivory manuscript frame guarantees crisp readability across green-to-sage transition */}
-        <div className="rounded-3xl border border-gold-500/35 bg-ivory-50/96 p-7 shadow-xl backdrop-blur-xs sm:p-10 lg:p-14">
+        {/* Distinct Editorial Manuscript Spread: How we work -> Why we started -> Let's work together */}
+        <div className="relative overflow-hidden rounded-3xl border border-gold-500/40 bg-gradient-to-br from-ivory-50 via-white to-ivory-100 p-7 shadow-xl sm:p-10 lg:p-16">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-3 rounded-2xl border border-gold-500/15"
+          />
+
           <Reveal>
-            <div className="border-b border-ivory-300 pb-8">
+            <div className="relative border-b border-ivory-300 pb-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
-                  Founder&apos;s Note · Brand Heritage
+                <p className="text-xs font-semibold tracking-[0.2em] text-gold-600 uppercase">
+                  Why We Started · Founder&apos;s Note
                 </p>
                 <span className="rounded-full border border-forest-800/20 bg-ivory-200 px-3.5 py-1 text-[11px] font-bold tracking-[0.14em] text-forest-900 uppercase">
                   {siteConfig.productPromise}
                 </span>
               </div>
-              <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-5xl lg:leading-[1.15]">
+              <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-5xl lg:leading-[1.15]">
                 Rooted in Bihar. Inspired by India.{" "}
                 <span className="text-forest-700">Made for the World.</span>
               </h2>
             </div>
           </Reveal>
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="relative mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14">
+            {/* Editorial Sidebar: Authentic Bihar Origin Visual & Founder Card */}
             <div className="lg:col-span-4">
               <Reveal delayMs={80}>
-                <aside className="rounded-2xl border border-forest-800/15 bg-forest-900 p-7 text-ivory-100 shadow-lg sm:p-8">
-                  <div className="flex items-center gap-4">
+                <aside className="overflow-hidden rounded-2xl border border-forest-800/15 bg-forest-900 text-ivory-100 shadow-lg">
+                  {/* Authentic Bihar Heritage Visual (No invented founder portrait) */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-white/10">
+                    <Image
+                      src="/images/sourcing/bihar-lotus-wetland.jpg"
+                      alt="Morning mist over Bihar's traditional makhana wetlands"
+                      fill
+                      loading="lazy"
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      className="object-cover"
+                    />
                     <div
                       aria-hidden="true"
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-gold-500/45 bg-forest-800 font-serif text-xl font-semibold text-gold-400"
-                    >
-                      SA
+                      className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/20 to-transparent"
+                    />
+                    <p className="absolute bottom-3 left-4 text-[10px] font-semibold tracking-[0.16em] text-gold-400 uppercase">
+                      Bihar Heritage · Origin Roots
+                    </p>
+                  </div>
+
+                  <div className="p-7 sm:p-8">
+                    <div className="flex items-center gap-4">
+                      <div
+                        aria-hidden="true"
+                        className="flex h-13 w-13 shrink-0 items-center justify-center rounded-xl border border-gold-500/45 bg-forest-800 font-serif text-xl font-semibold text-gold-400"
+                      >
+                        SA
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-ivory-50">
+                          {siteConfig.founder.name}
+                        </h3>
+                        <p className="text-xs font-medium tracking-wider text-gold-400 uppercase">
+                          {siteConfig.founder.role}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-ivory-50">
-                        {siteConfig.founder.name}
-                      </h3>
-                      <p className="text-xs font-medium tracking-wider text-gold-400 uppercase">
-                        {siteConfig.founder.role}
+
+                    <blockquote className="mt-6 border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-100">
+                      &ldquo;Our roots are Indian. Our vision is global.&rdquo;
+                    </blockquote>
+
+                    <div className="mt-6 rounded-xl border border-white/10 bg-forest-800/60 p-3.5">
+                      <p className="text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
+                        {siteConfig.productPromise}
+                      </p>
+                      <p className="mt-1 text-xs text-ivory-200/85">
+                        {siteConfig.productPromiseSub}
                       </p>
                     </div>
+
+                    <dl className="mt-6 space-y-3 border-t border-white/15 pt-5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <dt className="text-ivory-300/80">Origin Focus</dt>
+                        <dd className="font-semibold text-ivory-100">Bihar, India</dd>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <dt className="text-ivory-300/80">Core Ecosystem</dt>
+                        <dd className="font-semibold text-ivory-100">Purnea &amp; Katihar</dd>
+                      </div>
+                    </dl>
+
+                    <a
+                      href={siteConfig.founder.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold-500/45 bg-forest-800/80 px-5 py-2.5 text-xs font-semibold tracking-wider text-gold-400 uppercase transition-colors hover:bg-gold-500 hover:text-forest-950"
+                    >
+                      <span>Connect on LinkedIn</span>
+                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </a>
                   </div>
-
-                  <blockquote className="mt-7 border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-100">
-                    &ldquo;Our roots are Indian. Our vision is global.&rdquo;
-                  </blockquote>
-
-                  <div className="mt-6 rounded-xl border border-white/10 bg-forest-800/60 p-3.5">
-                    <p className="text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
-                      {siteConfig.productPromise}
-                    </p>
-                    <p className="mt-1 text-xs text-ivory-200/85">
-                      {siteConfig.productPromiseSub}
-                    </p>
-                  </div>
-
-                  <dl className="mt-6 space-y-3 border-t border-white/15 pt-5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <dt className="text-ivory-300/80">Origin Focus</dt>
-                      <dd className="font-semibold text-ivory-100">Bihar, India</dd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <dt className="text-ivory-300/80">Core Ecosystem</dt>
-                      <dd className="font-semibold text-ivory-100">Purnea &amp; Katihar</dd>
-                    </div>
-                  </dl>
-
-                  <a
-                    href={siteConfig.founder.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold-500/45 bg-forest-800/80 px-5 py-2.5 text-xs font-semibold tracking-wider text-gold-400 uppercase transition-colors hover:bg-gold-500 hover:text-forest-950"
-                  >
-                    <span>Connect on LinkedIn</span>
-                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </a>
                 </aside>
               </Reveal>
             </div>
 
+            {/* Editorial Narrative: Preserved intact + natural transition to working together */}
             <div className="lg:col-span-8">
               <Reveal delayMs={140}>
-                <article className="max-w-2xl space-y-5 text-base leading-[1.8] text-ink-800 sm:text-[1.0625rem]">
+                <article className="max-w-2xl space-y-5 text-base leading-[1.85] text-ink-800 sm:text-[1.0625rem]">
                   <p className="text-xs font-semibold tracking-[0.16em] text-ink-500 uppercase">
                     Surya Alok | Founder, EastField India
                   </p>
 
-                  <p>
+                  <p className="font-serif text-xl leading-relaxed text-forest-900">
                     Coming from Bihar, I have a natural connection with the region&apos;s rich food
                     and cultural heritage.
                   </p>
@@ -105,7 +142,7 @@ export function FounderStorySection() {
                     deserve greater recognition and appreciation.
                   </p>
                   <p>Yet, much of this heritage remains underrepresented in international markets.</p>
-                  <p className="font-medium text-forest-900">
+                  <p className="font-semibold text-forest-900">
                     That is where EastField India begins.
                   </p>
                   <p>
@@ -125,7 +162,7 @@ export function FounderStorySection() {
                   </p>
 
                   <div className="border-t border-ivory-300 pt-6">
-                    <p className="font-serif text-xl font-semibold text-forest-900">
+                    <p className="font-serif text-2xl font-semibold text-forest-900">
                       Our roots are Indian. Our vision is global.
                     </p>
                     <p className="mt-2 text-sm font-medium text-ink-600">
@@ -133,6 +170,26 @@ export function FounderStorySection() {
                       <br />
                       Founder, EastField India
                     </p>
+                  </div>
+
+                  {/* Natural Closing Bridge: Why we started -> Let's work together */}
+                  <div className="mt-8 flex flex-col justify-between gap-4 rounded-2xl border border-gold-500/35 bg-ivory-200/70 p-5 sm:flex-row sm:items-center">
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
+                        Let&apos;s Work Together
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-forest-900">
+                        Ready to evaluate Bihar-origin makhana for your business?
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => openSampleRequest()}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-forest-900 px-5 py-2.5 text-xs font-bold tracking-[0.14em] text-gold-400 uppercase transition-colors hover:bg-forest-800"
+                    >
+                      <span>Request a Sample</span>
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
                   </div>
                 </article>
               </Reveal>

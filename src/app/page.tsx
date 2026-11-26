@@ -7,10 +7,10 @@ import { WhoWeAreSection } from "@/components/sections/WhoWeAreSection";
 import { SourcingRegionSection } from "@/components/sections/SourcingRegionSection";
 import { WhyMakhanaSection } from "@/components/sections/WhyMakhanaSection";
 import { MakhanaGradesSection } from "@/components/sections/MakhanaGradesSection";
-import { FounderStorySection } from "@/components/sections/FounderStorySection";
 import { B2BBuyersSection } from "@/components/sections/B2BBuyersSection";
 import { QualitySection } from "@/components/sections/QualitySection";
 import { ProcurementSection } from "@/components/sections/ProcurementSection";
+import { FounderStorySection } from "@/components/sections/FounderStorySection";
 import { InquiryFormSection } from "@/components/forms/InquiryFormSection";
 import { SampleRequestModal } from "@/components/forms/SampleRequestModal";
 import { WelcomeLeadModal } from "@/components/forms/WelcomeLeadModal";
@@ -53,10 +53,10 @@ export default function HomePage() {
           <SourcingRegionSection />
           <WhyMakhanaSection />
           <MakhanaGradesSection />
-          <FounderStorySection />
           <B2BBuyersSection />
           <QualitySection />
           <ProcurementSection />
+          <FounderStorySection />
           <InquiryFormSection />
         </main>
         <Footer />
