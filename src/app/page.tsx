@@ -1,0 +1,56 @@
+import React from "react";
+import { Header } from "@/components/navigation/Header";
+import { HeroSection } from "@/components/hero/HeroSection";
+import { WhoWeAreSection } from "@/components/sections/WhoWeAreSection";
+import { SourcingRegionSection } from "@/components/sections/SourcingRegionSection";
+import { FounderStorySection } from "@/components/sections/FounderStorySection";
+import { MakhanaGradesSection } from "@/components/sections/MakhanaGradesSection";
+import { B2BBuyersSection } from "@/components/sections/B2BBuyersSection";
+import { QualitySection } from "@/components/sections/QualitySection";
+import { ProcurementSection } from "@/components/sections/ProcurementSection";
+import { InquiryFormSection } from "@/components/forms/InquiryFormSection";
+import { Footer } from "@/components/footer/Footer";
+import { siteConfig } from "@/config/site";
+
+export default function HomePage() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "Bihar",
+      addressCountry: "IN",
+    },
+    areaServed: ["IN", "Global"],
+    founder: {
+      "@type": "Person",
+      name: siteConfig.founder.name,
+      sameAs: siteConfig.founder.linkedinUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <Header />
+      <main id="main-content">
+        <HeroSection />
+        <WhoWeAreSection />
+        <SourcingRegionSection />
+        <FounderStorySection />
+        <MakhanaGradesSection />
+        <B2BBuyersSection />
+        <QualitySection />
+        <ProcurementSection />
+        <InquiryFormSection />
+      </main>
+      <Footer />
+    </>
+  );
+}

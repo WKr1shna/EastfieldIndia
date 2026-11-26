@@ -1,0 +1,30 @@
+export const siteConfig = {
+  name: "EastField India",
+  shortMark: "EF",
+  subtitle: "Bihar-Origin Makhana",
+  positioning: "Makhana Aggregation & B2B Supply",
+  tagline: "Rooted in Bihar. Inspired by India. Made for the World.",
+  heroLocation: "Purnea & Katihar · Bihar, India",
+  heroPillars: "Aggregation · Quality · B2B Supply",
+  description:
+    "EastField India connects Bihar's makhana sourcing and processing ecosystem in Purnea and Katihar with domestic and international B2B buyers through structured sourcing, aggregation, quality alignment, and supply.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://eastfieldindia.com",
+  location: "Bihar, India",
+  sourcingHubs: ["Purnea", "Katihar"],
+  gstin: "10BIPPA9997L1ZM",
+  founder: {
+    name: "Surya Alok",
+    role: "Founder, EastField India",
+    linkedinUrl: "https://www.linkedin.com/in/surya-alok-567404250/",
+  },
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "",
+  navigation: [
+    { label: "Home", href: "#home" },
+    { label: "About", href: "#about" },
+    { label: "Sourcing", href: "#sourcing" },
+    { label: "Makhana", href: "#makhana" },
+    { label: "Quality", href: "#quality" },
+    { label: "Procurement", href: "#procurement" },
+    { label: "Contact", href: "#inquiry" },
+  ],
+} as const;

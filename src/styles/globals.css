@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest-950: #061d17;
+  --color-forest-900: #0b3027;
+  --color-forest-800: #17483b;
+  --color-forest-700: #285c4d;
+  --color-forest-600: #35705f;
+  --color-ivory-50: #faf8f2;
+  --color-ivory-100: #f5f1e5;
+  --color-ivory-200: #ede6d4;
+  --color-ivory-300: #dfd5bc;
+  --color-gold-400: #d4b46f;
+  --color-gold-500: #c6a45c;
+  --color-gold-600: #a88640;
+  --color-ink-900: #132a23;
+  --color-ink-800: #193a31;
+  --color-ink-600: #3d5b52;
+  --color-ink-500: #557067;
+
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: clip;
+    background-color: #0b3027;
+    color: #193a31;
+  }
+
+  body {
+    overflow-x: clip;
+    background-color: #f5f1e5;
+    color: #193a31;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid #c6a45c;
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Subtle organic grain texture for deep green & ivory editorial bands */
+.bg-grain-dark {
+  background-color: #0b3027;
+  background-image:
+    radial-gradient(circle at 88% 12%, rgba(40, 92, 77, 0.42) 0%, transparent 45%),
+    radial-gradient(circle at 10% 85%, rgba(23, 72, 59, 0.55) 0%, transparent 50%);
+}
+
+.bg-grain-ivory {
+  background-color: #f5f1e5;
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(237, 230, 212, 0.85) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(237, 230, 212, 0.65) 0%, transparent 45%);
+}
+
+/* Animated ecosystem bridge line */
+@keyframes pulseFlow {
+  0% {
+    stroke-dashoffset: 48;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-flow-line {
+  stroke-dasharray: 6 6;
+  animation: pulseFlow 2.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flow-line {
+    animation: none;
+  }
+}
