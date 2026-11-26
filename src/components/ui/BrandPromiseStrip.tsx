@@ -5,7 +5,7 @@ export function BrandPromiseStrip() {
   return (
     <div
       aria-label="EastField India brand pillars"
-      className="border-b border-gold-500/25 bg-forest-950 text-ivory-100"
+      className="border-b border-white/10 bg-forest-950/45 text-ivory-100 backdrop-blur-xs"
     >
       <div className="mx-auto grid max-w-7xl divide-y divide-white/10 px-5 sm:px-8 lg:grid-cols-3 lg:divide-x lg:divide-y-0 lg:px-10">
         <div className="py-4 lg:pr-6">

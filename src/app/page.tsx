@@ -2,6 +2,7 @@ import React from "react";
 import { Header } from "@/components/navigation/Header";
 import { HeroSection } from "@/components/hero/HeroSection";
 import { BrandPromiseStrip } from "@/components/ui/BrandPromiseStrip";
+import { ScrollColorCanvas } from "@/components/ui/ScrollColorCanvas";
 import { WhoWeAreSection } from "@/components/sections/WhoWeAreSection";
 import { SourcingRegionSection } from "@/components/sections/SourcingRegionSection";
 import { FounderStorySection } from "@/components/sections/FounderStorySection";
@@ -43,21 +44,23 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <Header />
-      <main id="main-content">
-        <HeroSection />
-        <BrandPromiseStrip />
-        <WhoWeAreSection />
-        <SourcingRegionSection />
-        <FounderStorySection />
-        <WhyMakhanaSection />
-        <MakhanaGradesSection />
-        <B2BBuyersSection />
-        <QualitySection />
-        <ProcurementSection />
-        <InquiryFormSection />
-      </main>
-      <Footer />
+      <ScrollColorCanvas>
+        <Header />
+        <main id="main-content">
+          <HeroSection />
+          <BrandPromiseStrip />
+          <WhoWeAreSection />
+          <SourcingRegionSection />
+          <FounderStorySection />
+          <WhyMakhanaSection />
+          <MakhanaGradesSection />
+          <B2BBuyersSection />
+          <QualitySection />
+          <ProcurementSection />
+          <InquiryFormSection />
+        </main>
+        <Footer />
+      </ScrollColorCanvas>
       <WelcomeLeadModal />
       <SampleRequestModal />
     </>

@@ -23,7 +23,7 @@ export function WhyMakhanaSection() {
   return (
     <section
       id="why-makhana"
-      className="border-b border-ivory-300 bg-ivory-100 py-16 text-ink-900 sm:py-24"
+      className="border-b border-forest-900/10 py-16 text-ink-900 sm:py-24"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Poster Container: Warm Cream with Muted Gold Framing */}

@@ -12,7 +12,7 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="bg-grain-dark relative overflow-hidden border-b border-white/10 text-ivory-100"
+      className="relative overflow-hidden border-b border-white/10 text-ivory-100"
     >
       {/* Subtle geometric arcs inspired by EastField print brochure */}
       <div

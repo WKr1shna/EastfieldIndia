@@ -8,22 +8,22 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export function WhoWeAreSection() {
   return (
-    <section id="about" className="bg-grain-ivory border-b border-ivory-300/80 py-16 sm:py-24">
+    <section id="about" className="border-b border-white/10 py-16 text-ivory-100 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <Reveal>
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
+            <p className="text-xs font-semibold tracking-[0.18em] text-gold-400 uppercase">
               Who We Are · The EastField Model
             </p>
-            <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
+            <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ivory-50 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
               We organise the space between source and buyer.
             </h2>
-            <div className="mt-5 space-y-3 text-base leading-relaxed text-ink-600 sm:text-lg">
+            <div className="mt-5 space-y-3 text-base leading-relaxed text-ivory-200/90 sm:text-lg">
               <p>
                 EastField India is building a sourcing and aggregation business connecting
                 Bihar&apos;s makhana production and processing ecosystem with professional buyers.
               </p>
-              <p className="font-medium text-ink-800">
+              <p className="font-medium text-ivory-50">
                 We work backwards from the brief: grade, quantity, application, destination and
                 agreed quality criteria.
               </p>
@@ -35,7 +35,7 @@ export function WhoWeAreSection() {
         <Reveal delayMs={100}>
           <div className="mt-12 grid items-stretch gap-5 lg:grid-cols-11 lg:gap-0">
             {/* Source Ecosystem */}
-            <div className="flex flex-col justify-between rounded-2xl border border-ivory-300 bg-white p-6 shadow-sm sm:p-8 lg:col-span-4">
+            <div className="flex flex-col justify-between rounded-2xl border border-ivory-200/30 bg-ivory-50/95 p-6 text-ink-900 shadow-lg backdrop-blur-xs sm:p-8 lg:col-span-4">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-forest-900/10 text-forest-800">
@@ -56,7 +56,7 @@ export function WhoWeAreSection() {
                   {SOURCE_ECOSYSTEM_NODES.map((node) => (
                     <li
                       key={node}
-                      className="flex items-center gap-3 rounded-lg border border-ivory-200 bg-ivory-50 px-3.5 py-2.5 text-sm font-medium text-ink-800"
+                      className="flex items-center gap-3 rounded-lg border border-ivory-200 bg-white px-3.5 py-2.5 text-sm font-medium text-ink-800"
                     >
                       <span className="h-2 w-2 shrink-0 rounded-full bg-forest-700" />
                       <span>{node}</span>
@@ -80,16 +80,16 @@ export function WhoWeAreSection() {
                   y1="20"
                   x2="72"
                   y2="20"
-                  stroke="#285C4D"
+                  stroke="#D4B46F"
                   strokeWidth="2"
                   className="animate-flow-line"
                 />
-                <polygon points="70,15 80,20 70,25" fill="#285C4D" />
+                <polygon points="70,15 80,20 70,25" fill="#D4B46F" />
               </svg>
             </div>
 
             {/* Center Bridge: EastField India */}
-            <div className="relative flex flex-col justify-between rounded-2xl border border-gold-500/40 bg-forest-900 p-7 text-ivory-100 shadow-xl sm:p-8 lg:col-span-3">
+            <div className="relative flex flex-col justify-between rounded-2xl border border-gold-500/45 bg-forest-950/92 p-7 text-ivory-100 shadow-2xl backdrop-blur-xs sm:p-8 lg:col-span-3">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gold-500/40 bg-forest-800 text-xs font-bold tracking-wider text-gold-400">
@@ -139,24 +139,24 @@ export function WhoWeAreSection() {
                   y1="20"
                   x2="72"
                   y2="20"
-                  stroke="#C6A45C"
+                  stroke="#D4B46F"
                   strokeWidth="2"
                   className="animate-flow-line"
                 />
-                <polygon points="70,15 80,20 70,25" fill="#C6A45C" />
+                <polygon points="70,15 80,20 70,25" fill="#D4B46F" />
               </svg>
             </div>
 
             {/* Mobile Vertical Arrow Indicator */}
             <div className="flex justify-center lg:hidden" aria-hidden="true">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-forest-900/10 px-3 py-1 text-xs font-semibold text-forest-800">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-forest-950/60 px-3 py-1 text-xs font-semibold text-gold-400">
                 <span>Source to Market Alignment</span>
                 <ArrowRight className="h-3.5 w-3.5 rotate-90" />
               </span>
             </div>
 
             {/* Buyer Ecosystem */}
-            <div className="flex flex-col justify-between rounded-2xl border border-ivory-300 bg-white p-6 shadow-sm sm:p-8 lg:col-span-2 lg:min-w-0 xl:col-span-2">
+            <div className="flex flex-col justify-between rounded-2xl border border-ivory-200/30 bg-ivory-50/95 p-6 text-ink-900 shadow-lg backdrop-blur-xs sm:p-8 lg:col-span-2 lg:min-w-0 xl:col-span-2">
               <div>
                 <div className="flex items-center justify-between">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gold-500/15 text-gold-600">
@@ -177,7 +177,7 @@ export function WhoWeAreSection() {
                   {BUYER_ECOSYSTEM_NODES.map((node) => (
                     <li
                       key={node}
-                      className="flex items-center gap-2.5 rounded-lg border border-ivory-200 bg-ivory-50 px-3 py-2 text-xs font-semibold text-ink-800"
+                      className="flex items-center gap-2.5 rounded-lg border border-ivory-200 bg-white px-3 py-2 text-xs font-semibold text-ink-800"
                     >
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
                       <span>{node}</span>

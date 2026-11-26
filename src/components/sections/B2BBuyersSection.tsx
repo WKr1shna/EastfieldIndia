@@ -13,7 +13,7 @@ export function B2BBuyersSection() {
   const { openSampleRequest, scrollToEnquiry } = useInquiryPreset();
 
   return (
-    <section id="buyers" className="bg-grain-ivory border-b border-ivory-300 py-16 sm:py-24">
+    <section id="buyers" className="border-b border-forest-900/10 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <Reveal>
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">

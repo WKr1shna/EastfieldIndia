@@ -42,24 +42,24 @@ export function SourcingRegionSection() {
   const [activeHub, setActiveHub] = useState<HubDetail>(SOURCING_HUBS[0]);
 
   return (
-    <section id="sourcing" className="border-b border-ivory-300 bg-ivory-200/70 py-16 sm:py-24">
+    <section id="sourcing" className="border-b border-white/10 py-16 text-ivory-100 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="grid items-center gap-12 lg:grid-cols-12">
           {/* Left: Regional Copy & Interactive Hub Selector */}
           <div className="lg:col-span-6">
             <Reveal>
-              <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
+              <p className="text-xs font-semibold tracking-[0.18em] text-gold-400 uppercase">
                 Our Sourcing Region · Bihar, India
               </p>
-              <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
+              <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ivory-50 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
                 Rooted in Bihar&apos;s Makhana Ecosystem.
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink-600 sm:text-lg">
+              <p className="mt-4 text-base leading-relaxed text-ivory-200/90 sm:text-lg">
                 We work within the sourcing ecosystem of Purnea and Katihar, connecting regional
                 supply with buyer requirements.
               </p>
 
-              <div className="mt-6 rounded-xl border border-forest-800/15 bg-forest-900 px-5 py-4 text-ivory-100">
+              <div className="mt-6 rounded-xl border border-gold-500/35 bg-forest-950/85 px-5 py-4 text-ivory-100 backdrop-blur-xs">
                 <p className="text-xs font-semibold tracking-[0.15em] text-gold-400 uppercase">
                   Regional Positioning
                 </p>
@@ -80,8 +80,8 @@ export function SourcingRegionSection() {
                       aria-pressed={selected}
                       className={`rounded-xl border p-4 text-left transition-all ${
                         selected
-                          ? "border-forest-800 bg-white shadow-md ring-1 ring-forest-800/20"
-                          : "border-ivory-300 bg-ivory-50/80 hover:border-forest-700/40 hover:bg-white"
+                          ? "border-gold-400 bg-ivory-50 text-ink-900 shadow-lg"
+                          : "border-white/20 bg-ivory-50/90 text-ink-900 hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -93,7 +93,7 @@ export function SourcingRegionSection() {
                           {hub.name}
                         </span>
                         <span
-                          className={`h-2 w-2 rounded-full ${
+                          className={`h-2.5 w-2.5 rounded-full ${
                             selected ? "bg-gold-500" : "bg-ivory-300"
                           }`}
                         />
@@ -104,7 +104,7 @@ export function SourcingRegionSection() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-5">
+              <div className="mt-4 rounded-xl border border-ivory-200/30 bg-ivory-50/95 p-5 text-ink-900 shadow-md">
                 <p className="text-xs font-semibold tracking-[0.14em] text-forest-700 uppercase">
                   {activeHub.name} · Sourcing Focus
                 </p>
@@ -117,8 +117,7 @@ export function SourcingRegionSection() {
           {/* Right: Illustrated Regional Map + Authentic Wetland Photography */}
           <div className="space-y-5 lg:col-span-6">
             <Reveal delayMs={120}>
-              {/* Stylized Illustrated Map of Eastern Bihar Makhana Belt */}
-              <div className="rounded-2xl border border-forest-800/15 bg-forest-900 p-5 text-ivory-100 shadow-lg sm:p-6">
+              <div className="rounded-2xl border border-white/15 bg-forest-950/90 p-5 text-ivory-100 shadow-xl backdrop-blur-xs sm:p-6">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Compass className="h-4 w-4 text-gold-400" aria-hidden="true" />
@@ -135,9 +134,8 @@ export function SourcingRegionSection() {
                   viewBox="0 0 420 240"
                   role="img"
                   aria-label="Stylized illustration of Bihar highlighting the Purnea and Katihar makhana sourcing belt and outbound trade corridors"
-                  className="w-full rounded-xl border border-white/10 bg-forest-950/60"
+                  className="w-full rounded-xl border border-white/10 bg-forest-950/75"
                 >
-                  {/* Subtle grid */}
                   <defs>
                     <pattern id="region-grid" width="24" height="24" patternUnits="userSpaceOnUse">
                       <path
@@ -150,29 +148,26 @@ export function SourcingRegionSection() {
                   </defs>
                   <rect width="420" height="240" fill="url(#region-grid)" />
 
-                  {/* Stylized Bihar boundary silhouette (artistic outline, clearly illustrative) */}
                   <path
                     d="M 78 62 L 152 54 L 222 60 L 295 58 L 336 74 L 344 116 L 330 168 L 288 188 L 234 196 L 178 192 L 116 196 L 76 172 L 66 122 Z"
                     fill="#17483B"
-                    fillOpacity="0.48"
+                    fillOpacity="0.52"
                     stroke="#35705F"
                     strokeWidth="1.5"
                   />
 
-                  {/* Kosi-Mahananda Wetland Zone highlight */}
                   <ellipse
                     cx="288"
                     cy="134"
                     rx="46"
                     ry="44"
                     fill="#C6A45C"
-                    fillOpacity="0.14"
+                    fillOpacity="0.16"
                     stroke="#C6A45C"
-                    strokeOpacity="0.45"
+                    strokeOpacity="0.48"
                     strokeDasharray="4 4"
                   />
 
-                  {/* Stylized River Arcs */}
                   <path
                     d="M 74 134 Q 168 118 242 132 T 340 144"
                     fill="none"
@@ -181,7 +176,6 @@ export function SourcingRegionSection() {
                     strokeOpacity="0.55"
                   />
 
-                  {/* Outbound B2B Trade Connection Arcs */}
                   <path
                     d="M 278 118 Q 205 90 112 110"
                     fill="none"
@@ -197,7 +191,6 @@ export function SourcingRegionSection() {
                     className="animate-flow-line"
                   />
 
-                  {/* Domestic & Export Corridor Labels */}
                   <circle cx="112" cy="110" r="3.5" fill="#EDE6D4" />
                   <text x="86" y="100" fill="#EDE6D4" fontSize="9.5" fontFamily="sans-serif">
                     Domestic Markets
@@ -206,7 +199,6 @@ export function SourcingRegionSection() {
                     Export Corridors
                   </text>
 
-                  {/* Hub Markers */}
                   {SOURCING_HUBS.map((hub) => {
                     const selected = activeHub.id === hub.id;
                     return (
@@ -256,8 +248,7 @@ export function SourcingRegionSection() {
                 </svg>
               </div>
 
-              {/* Authentic Bihar Wetland Photography */}
-              <figure className="relative overflow-hidden rounded-2xl border border-ivory-300 bg-forest-900 shadow-md">
+              <figure className="relative overflow-hidden rounded-2xl border border-white/15 bg-forest-950 shadow-lg">
                 <div className="relative aspect-[16/9] w-full">
                   <Image
                     src="/images/sourcing/bihar-lotus-wetland.jpg"

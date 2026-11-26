@@ -126,21 +126,21 @@ export function InquiryFormSection() {
   return (
     <section
       id="inquiry"
-      className="bg-grain-dark border-b border-white/10 py-16 text-ivory-100 sm:py-24"
+      className="py-16 text-ink-900 sm:py-24"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Left Column: Business Enquiry / Sample Trigger & GSTIN Details */}
           <div className="lg:col-span-5">
             <Reveal>
-              <div className="inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-forest-800/80 px-3.5 py-1 text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
+              <div className="inline-flex items-center gap-2 rounded-full border border-forest-800/20 bg-ivory-200 px-3.5 py-1 text-[11px] font-bold tracking-[0.15em] text-forest-900 uppercase">
                 {siteConfig.productPromise}
               </div>
 
-              <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-ivory-50 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
+              <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
                 Connect with EastField India.
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-ivory-200/90">
+              <p className="mt-4 text-base leading-relaxed text-ink-600">
                 Leave your business contact details for a quick commercial conversation, or launch
                 our dedicated sample request flow to evaluate Bihar-origin makhana grades.
               </p>
@@ -149,7 +149,7 @@ export function InquiryFormSection() {
                 <button
                   type="button"
                   onClick={() => openSampleRequest()}
-                  className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-xs font-bold tracking-[0.14em] text-forest-950 uppercase transition-colors hover:bg-gold-400"
+                  className="inline-flex items-center gap-2 rounded-full bg-forest-900 px-6 py-3.5 text-xs font-bold tracking-[0.14em] text-gold-400 uppercase shadow-sm transition-colors hover:bg-forest-800"
                 >
                   <PackageCheck className="h-4 w-4" aria-hidden="true" />
                   <span>Request a Sample</span>
@@ -159,7 +159,7 @@ export function InquiryFormSection() {
               {/* Separate Business Details & GSTIN Panel */}
               <aside
                 aria-label="Business details"
-                className="mt-8 rounded-2xl border border-white/15 bg-forest-950/75 p-6"
+                className="mt-8 rounded-2xl border border-forest-800/15 bg-forest-900 p-6 text-ivory-100 shadow-md"
               >
                 <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-gold-400 uppercase">
                   <Building className="h-3.5 w-3.5" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function InquiryFormSection() {
           {/* Right Column: Minimal, Frictionless 4-Field General Business Enquiry */}
           <div className="lg:col-span-7">
             <Reveal delayMs={100}>
-              <div className="rounded-2xl border border-ivory-300/20 bg-ivory-100 p-6 text-ink-900 shadow-2xl sm:p-9">
+              <div className="rounded-2xl border border-ivory-300 bg-white p-6 text-ink-900 shadow-xl sm:p-9">
                 <div className="mb-6 border-b border-ivory-300 pb-4">
                   <p className="text-xs font-bold tracking-[0.16em] text-gold-600 uppercase">
                     General Business Enquiry

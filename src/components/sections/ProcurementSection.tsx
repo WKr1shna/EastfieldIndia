@@ -13,7 +13,7 @@ export function ProcurementSection() {
   const { openSampleRequest } = useInquiryPreset();
 
   return (
-    <section id="procurement" className="bg-grain-ivory border-b border-ivory-300 py-16 sm:py-24">
+    <section id="procurement" className="border-b border-forest-900/10 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <Reveal>
           <div className="max-w-3xl">

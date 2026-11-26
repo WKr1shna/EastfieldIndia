@@ -6,7 +6,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export function QualitySection() {
   return (
-    <section id="quality" className="border-b border-ivory-300 bg-ivory-200/65 py-16 sm:py-24">
+    <section id="quality" className="border-b border-forest-900/10 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <div className="grid items-start gap-10 lg:grid-cols-12">
           {/* Left Sticky Editorial Column */}
