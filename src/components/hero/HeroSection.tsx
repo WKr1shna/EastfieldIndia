@@ -18,7 +18,7 @@ export function HeroSection() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex justify-center">
         <div className="relative h-[340px] w-full max-w-[1440px] shrink-0 overflow-hidden sm:h-[460px] lg:h-full lg:max-h-[768px]">
           <Image
-            src="/images/hero/makhana-pond-hero.jpg"
+            src="/images/hero/makhana-pond-hero-v2.jpg"
             alt="Woven bamboo basket of Bihar-origin makhana beside a sunlit lotus pond at dawn"
             fill
             priority
