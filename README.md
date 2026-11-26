@@ -79,3 +79,7 @@ npm run lint        # Run ESLint
 npm run typecheck   # Run TypeScript compiler check
 npm test            # Run unit & integration test suite (Vitest)
 ```
+
+## Image Attribution
+
+- Real Bihar fox nut (makhana) photography incorporated into `public/images/grades/6-suta.jpg` and `public/images/grades/6-plus-suta.jpg` incorporates [Foxnut Makhana - Nawada District - Bihar - 1.jpg](https://commons.wikimedia.org/wiki/File:Foxnut_Makhana_-_Nawada_District_-_Bihar_-_1.jpg) via Wikimedia Commons (CC BY-SA 4.0).
