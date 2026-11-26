@@ -125,35 +125,82 @@ export function ProcurementSection() {
                   From first brief to repeat replenishment
                 </p>
               </div>
-              <p className="text-xs text-ink-500">
-                Mapped across Understand · Source &amp; Verify · Supply
+              <p className="text-xs font-medium tracking-wide text-ink-500">
+                UNDERSTAND → SOURCE &amp; VERIFY → SUPPLY
               </p>
             </div>
 
-            <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-              {BUYER_JOURNEY_STEPS.map((item) => (
-                <li
-                  key={item.step}
-                  className="flex flex-col justify-between rounded-xl border border-ivory-200 bg-ivory-50/75 p-4"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-forest-900 font-mono text-xs font-bold text-gold-400">
-                        {item.step}
-                      </span>
-                      <span className="text-[10px] font-semibold tracking-wider text-ink-500 uppercase">
-                        Stage {item.stageRef}
-                      </span>
+            {/* Desktop Phase Grouping Header aligning directly over the 6 execution cards */}
+            <div
+              aria-hidden="true"
+              className="mt-6 hidden gap-4 lg:grid lg:grid-cols-6"
+            >
+              <div className="lg:col-span-1 flex items-center justify-between rounded-lg border border-forest-800/20 bg-forest-900/[0.04] px-3 py-1.5">
+                <span className="font-mono text-[10px] font-bold tracking-wider text-forest-900">
+                  STAGE 01
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.1em] text-forest-800 uppercase">
+                  UNDERSTAND
+                </span>
+              </div>
+              <div className="lg:col-span-4 flex items-center justify-between rounded-lg border border-gold-500/40 bg-gold-500/10 px-3.5 py-1.5">
+                <span className="font-mono text-[10px] font-bold tracking-wider text-gold-700">
+                  STAGE 02 · STEPS 02–05
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.14em] text-forest-900 uppercase">
+                  SOURCE &amp; VERIFY
+                </span>
+              </div>
+              <div className="lg:col-span-1 flex items-center justify-between rounded-lg border border-forest-800/20 bg-forest-900/[0.04] px-3 py-1.5">
+                <span className="font-mono text-[10px] font-bold tracking-wider text-forest-900">
+                  STAGE 03
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.1em] text-forest-800 uppercase">
+                  SUPPLY
+                </span>
+              </div>
+            </div>
+
+            <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:mt-3 lg:grid-cols-6">
+              {BUYER_JOURNEY_STEPS.map((item) => {
+                const isSourcePhase = item.stageRef === "02";
+                return (
+                  <li
+                    key={item.step}
+                    className={`flex flex-col justify-between rounded-xl border border-t-2 p-4 ${
+                      isSourcePhase
+                        ? "border-gold-500/35 border-t-gold-500 bg-gold-500/[0.04]"
+                        : "border-ivory-200 border-t-forest-800 bg-ivory-50/75"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest-900 font-mono text-xs font-bold text-gold-400">
+                          {item.step}
+                        </span>
+                        <div className="text-right leading-tight">
+                          <span
+                            className={`block font-mono text-[10px] font-bold tracking-wider uppercase ${
+                              isSourcePhase ? "text-gold-600" : "text-forest-800"
+                            }`}
+                          >
+                            STAGE {item.stageRef}
+                          </span>
+                          <span className="mt-0.5 block text-[9px] font-semibold tracking-[0.06em] text-ink-600 uppercase">
+                            {item.stageTitle}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-xs font-bold tracking-wide text-forest-900 uppercase">
+                        {item.title}
+                      </p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-ink-600">
+                        {item.description}
+                      </p>
                     </div>
-                    <p className="mt-3 text-xs font-bold tracking-wide text-forest-900 uppercase">
-                      {item.title}
-                    </p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-ink-600">
-                      {item.description}
-                    </p>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </Reveal>

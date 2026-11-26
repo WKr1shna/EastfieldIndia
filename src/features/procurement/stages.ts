@@ -11,6 +11,7 @@ export interface BuyerJourneyStep {
   title: string;
   description: string;
   stageRef: "01" | "02" | "03";
+  stageTitle: "UNDERSTAND" | "SOURCE & VERIFY" | "SUPPLY";
 }
 
 export const PROCUREMENT_STAGES: ProcurementStage[] = [
@@ -68,35 +69,41 @@ export const BUYER_JOURNEY_STEPS: BuyerJourneyStep[] = [
     title: "SHARE THE BRIEF",
     description: "Grade, quantity, intended use and destination.",
     stageRef: "01",
+    stageTitle: "UNDERSTAND",
   },
   {
     step: "02",
     title: "CHECK AVAILABILITY",
     description: "Review sourcing options, timing and indicative commercial terms.",
     stageRef: "02",
+    stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "03",
     title: "EVALUATE THE SAMPLE",
     description: "Align product expectations and acceptance criteria.",
     stageRef: "02",
+    stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "04",
     title: "CONFIRM THE LOT",
     description: "Agree quantity, grade, checks, packing and delivery terms.",
     stageRef: "02",
+    stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "05",
     title: "AGGREGATE & VERIFY",
     description: "Consolidate the lot and assess agreed parameters.",
     stageRef: "02",
+    stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "06",
     title: "DISPATCH & REPLENISH",
     description: "Furnish the order and discuss the next buying cycle.",
     stageRef: "03",
+    stageTitle: "SUPPLY",
   },
 ];
