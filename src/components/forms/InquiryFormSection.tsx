@@ -8,7 +8,8 @@ import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function InquiryFormSection() {
-  const { savedContact, hasSavedContact, saveContact, openSampleRequest } = useInquiryPreset();
+  const { visitorState, savedContact, hasSavedContact, saveContact, openSampleRequest } =
+    useInquiryPreset();
 
   const [company, setCompany] = useState("");
   const [name, setName] = useState("");
@@ -54,6 +55,12 @@ export function InquiryFormSection() {
       name,
       phone,
       email,
+      leadId: savedContact.leadId,
+      visitorId: visitorState.visitorId,
+      firstVisitAt: visitorState.firstVisitAt,
+      latestVisitAt: visitorState.latestVisitAt,
+      leadSource: "general_enquiry" as const,
+      skippedInitial: visitorState.skippedInitial,
       details,
       website,
       formStartedAt,
@@ -99,7 +106,7 @@ export function InquiryFormSection() {
         return;
       }
 
-      saveContact({ company, name, phone, email });
+      saveContact({ leadId: data.referenceId || "", company, name, phone, email });
       setStatus("success");
       setReferenceId(data.referenceId || "");
       setServerMessage(

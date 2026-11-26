@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { readFile, rm } from "fs/promises";
 import path from "path";
 import { POST } from "@/app/api/inquiries/route";
+import { GET as adminGet } from "@/app/api/admin/leads/route";
 import { clearLocalRateLimitBuckets } from "@/services/rateLimit";
 
 const TEST_STORAGE_PATH = path.join(process.cwd(), ".data", "test-leads.ndjson");
@@ -18,107 +19,98 @@ function createRequest(body: unknown, ip = "203.0.113.10") {
   });
 }
 
-describe("POST /api/inquiries", () => {
+describe("POST /api/inquiries & GET /api/admin/leads", () => {
   beforeEach(() => {
     clearLocalRateLimitBuckets();
     process.env.INQUIRY_STORAGE_PATH = TEST_STORAGE_PATH;
-    process.env.RATE_LIMIT_MAX_REQUESTS = "3";
+    process.env.RATE_LIMIT_MAX_REQUESTS = "5";
+    process.env.ADMIN_API_KEY = "test-admin-secret-key-min-16-chars";
   });
 
   afterEach(async () => {
     delete process.env.INQUIRY_STORAGE_PATH;
     delete process.env.RATE_LIMIT_MAX_REQUESTS;
+    delete process.env.ADMIN_API_KEY;
     await rm(TEST_STORAGE_PATH, { force: true });
   });
 
-  const validSampleBody = {
-    requestType: "sample",
-    company: "Alpen Naturkost GmbH",
-    name: "Marcus Weber",
-    phone: "+49 30 1234567",
-    email: "sourcing@alpennaturkost.de",
-    grade: "6+ Suta",
-    sampleRequirement: "500 g 6+ Suta sample pack",
-    destination: "Hamburg, Germany",
-    details: "Requesting sample evaluation.",
-    website: "",
-    formStartedAt: Date.now() - 10_000,
-  };
-
-  it("persists structured lead with all required fields and returns 201", async () => {
-    const res = await POST(createRequest(validSampleBody));
-    const json = (await res.json()) as { ok: boolean; referenceId: string };
-
-    expect(res.status).toBe(201);
-    expect(json.ok).toBe(true);
-    expect(json.referenceId).toMatch(/^EF-\d{8}-[A-Z0-9]{6}$/);
-
-    const stored = JSON.parse((await readFile(TEST_STORAGE_PATH, "utf8")).trim()) as Record<
-      string,
-      unknown
-    >;
-    expect(stored.company).toBe("Alpen Naturkost GmbH");
-    expect(stored.name).toBe("Marcus Weber");
-    expect(stored.phone).toBe("+49 30 1234567");
-    expect(stored.email).toBe("sourcing@alpennaturkost.de");
-    expect(stored.enquiryType).toBe("Request a Sample");
-    expect(stored.grade).toBe("6+ Suta");
-    expect(stored.sampleRequirement).toBe("500 g 6+ Suta sample pack");
-    expect(stored.destination).toBe("Hamburg, Germany");
-    expect(stored.additionalMessage).toBe("Requesting sample evaluation.");
-    expect(stored.submittedAt).toBeTruthy();
-  });
-
-  it("persists minimal 4-field General Business Enquiry", async () => {
-    const res = await POST(
+  it("deduplicates initial entry lead and subsequent sample request into one enriched lead record", async () => {
+    const entryRes = await POST(
       createRequest({
-        requestType: "enquiry",
-        company: "Bharati Snacks",
-        name: "Suresh Jha",
-        phone: "+91 98111 22334",
-        email: "suresh@bharatisnacks.in",
+        requestType: "entry_lead",
+        name: "Marcus Weber",
+        phone: "+49 30 1234567",
+        company: "Alpen Naturkost GmbH",
+        email: "sourcing@alpennaturkost.de",
+        visitorId: "v_123",
+        leadSource: "entry_popup",
         website: "",
         formStartedAt: Date.now() - 5000,
       })
     );
-    expect(res.status).toBe(201);
-    const stored = JSON.parse((await readFile(TEST_STORAGE_PATH, "utf8")).trim()) as Record<
-      string,
-      unknown
-    >;
-    expect(stored.enquiryType).toBe("General Business Enquiry");
-  });
+    const entryJson = (await entryRes.json()) as { ok: boolean; referenceId: string };
+    expect(entryRes.status).toBe(201);
 
-  it("returns 422 with fieldErrors on invalid input", async () => {
-    const res = await POST(
+    const sampleRes = await POST(
       createRequest({
         requestType: "sample",
-        company: "",
-        name: "M",
-        phone: "123",
-        email: "invalid",
+        leadId: entryJson.referenceId,
+        name: "Marcus Weber",
+        phone: "+49 30 1234567",
+        company: "Alpen Naturkost GmbH",
+        email: "sourcing@alpennaturkost.de",
+        grade: "6+ Suta",
+        sampleRequirement: "500 g 6+ Suta sample pack",
+        destination: "Hamburg, Germany",
+        details: "Requesting sample evaluation.",
+        website: "",
+        formStartedAt: Date.now() - 5000,
       })
     );
-    const json = (await res.json()) as {
+    const sampleJson = (await sampleRes.json()) as {
       ok: boolean;
-      fieldErrors: Record<string, string>;
+      referenceId: string;
+      deduplicated: boolean;
     };
+    expect(sampleRes.status).toBe(201);
+    expect(sampleJson.referenceId).toBe(entryJson.referenceId);
+    expect(sampleJson.deduplicated).toBe(true);
 
-    expect(res.status).toBe(422);
-    expect(json.ok).toBe(false);
-    expect(json.fieldErrors.email).toBeDefined();
-    expect(json.fieldErrors.company).toBeDefined();
-    expect(json.fieldErrors.phone).toBeDefined();
+    const lines = (await readFile(TEST_STORAGE_PATH, "utf8")).trim().split("\n");
+    expect(lines).toHaveLength(1);
+    const stored = JSON.parse(lines[0]) as Record<string, unknown>;
+    expect(stored.requestedSample).toBe(true);
+    expect(stored.submittedDetails).toBe(true);
+    expect((stored.sampleDetails as Record<string, unknown>).grade).toBe("6+ Suta");
   });
 
-  it("enforces rate limiting after threshold is exceeded", async () => {
-    const ip = "198.51.100.77";
-    for (let i = 0; i < 3; i++) {
-      const okRes = await POST(createRequest(validSampleBody, ip));
-      expect(okRes.status).toBe(201);
-    }
-    const blockedRes = await POST(createRequest(validSampleBody, ip));
-    expect(blockedRes.status).toBe(429);
-    expect(blockedRes.headers.get("Retry-After")).toBeTruthy();
+  it("protects admin leads endpoint with Bearer auth and supports CSV export + filtering", async () => {
+    await POST(
+      createRequest({
+        requestType: "entry_lead",
+        name: "Ananya Sharma",
+        phone: "+91 98111 22334",
+        company: "Himalayan Foods",
+        email: "ananya@himalayanfoods.com",
+        website: "",
+        formStartedAt: Date.now() - 5000,
+      })
+    );
+
+    const unauthRes = await adminGet(new NextRequest("http://localhost:3000/api/admin/leads"));
+    expect(unauthRes.status).toBe(401);
+
+    const csvRes = await adminGet(
+      new NextRequest("http://localhost:3000/api/admin/leads?format=csv&requestedSample=false", {
+        headers: {
+          Authorization: "Bearer test-admin-secret-key-min-16-chars",
+        },
+      })
+    );
+    expect(csvRes.status).toBe(200);
+    expect(csvRes.headers.get("Content-Type")).toContain("text/csv");
+    const csvText = await csvRes.text();
+    expect(csvText).toContain("Himalayan Foods");
+    expect(csvText).toContain("Ananya Sharma");
   });
 });

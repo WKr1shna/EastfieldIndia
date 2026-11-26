@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { inquirySchema } from "@/validations/inquiry";
 import { checkRateLimit } from "@/services/rateLimit";
-import { saveInquiryRecord, type StoredLead } from "@/services/inquiryRepository";
+import { upsertLeadRecord, type StoredLead } from "@/services/inquiryRepository";
 import { sendInquiryNotification } from "@/services/emailService";
 
 function getClientIp(req: NextRequest): string {
@@ -89,42 +89,65 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const nowIso = new Date().toISOString();
   const isSample = data.requestType === "sample";
+  const isEntryLead = data.requestType === "entry_lead";
 
-  const record: StoredLead = {
-    id: `EF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 6).toUpperCase()}`,
-    company: sanitizeText(data.company),
+  const candidateId =
+    data.leadId && data.leadId.startsWith("EF-")
+      ? data.leadId
+      : `EF-${nowIso.slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 6).toUpperCase()}`;
+
+  const incomingLead: StoredLead = {
+    id: candidateId,
+    visitorId: sanitizeText(data.visitorId || ""),
     name: sanitizeText(data.name),
     phone: sanitizeText(data.phone),
+    company: sanitizeText(data.company),
     email: sanitizeText(data.email).toLowerCase(),
-    enquiryType: isSample ? "Request a Sample" : "General Business Enquiry",
-    grade: data.grade || "Not sure",
-    sampleRequirement: sanitizeText(data.sampleRequirement || ""),
-    destination: sanitizeText(data.destination || ""),
-    additionalMessage: sanitizeText(data.details || ""),
-    submittedAt: new Date().toISOString(),
+    firstVisitAt: sanitizeText(data.firstVisitAt || nowIso),
+    latestVisitAt: sanitizeText(data.latestVisitAt || nowIso),
+    leadSource: data.leadSource || (isEntryLead ? "entry_popup" : "general_enquiry"),
+    skippedInitial: Boolean(data.skippedInitial),
+    submittedDetails: true,
+    requestedSample: isSample,
+    sampleDetails: isSample
+      ? {
+          grade: data.grade || "Not sure",
+          sampleRequirement: sanitizeText(data.sampleRequirement || ""),
+          destination: sanitizeText(data.destination || ""),
+          additionalRequirements: sanitizeText(data.details || ""),
+        }
+      : null,
+    additionalMessage: !isSample ? sanitizeText(data.details || "") : "",
+    submittedAt: nowIso,
+    updatedAt: nowIso,
     sourceIpHash: hashIp(ip),
   };
 
-  const [storage, emailResult] = await Promise.all([
-    saveInquiryRecord(record),
-    sendInquiryNotification(record),
-  ]);
+  const storage = await upsertLeadRecord(incomingLead);
+  const emailResult = await sendInquiryNotification(storage.lead);
 
   const confirmationMessage = isSample
-    ? "Thank you. Your sample request has been received. We will review sample availability and coordinate the next steps."
+    ? "Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
+    : isEntryLead
+    ? "Thank you. Your business contact details have been saved."
     : "Thank you. Your business enquiry has been received. Our team will connect with you shortly.";
 
   return NextResponse.json(
     {
       ok: true,
-      referenceId: record.id,
+      referenceId: storage.lead.id,
+      deduplicated: storage.deduplicated,
       message: confirmationMessage,
       lead: {
-        enquiryType: record.enquiryType,
-        company: record.company,
-        grade: record.grade,
-        submittedAt: record.submittedAt,
+        id: storage.lead.id,
+        company: storage.lead.company,
+        name: storage.lead.name,
+        phone: storage.lead.phone,
+        email: storage.lead.email,
+        requestedSample: storage.lead.requestedSample,
+        submittedAt: storage.lead.submittedAt,
       },
       delivery: {
         persisted: storage.persisted,

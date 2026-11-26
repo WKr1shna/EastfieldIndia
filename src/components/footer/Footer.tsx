@@ -111,7 +111,10 @@ export function Footer() {
         <div className="mt-8 flex flex-col justify-between gap-4 text-xs text-ivory-300/70 sm:flex-row sm:items-center">
           <p>
             © {new Date().getFullYear()} {siteConfig.name} · Bihar, India · GSTIN:{" "}
-            {siteConfig.gstin}
+            {siteConfig.gstin} ·{" "}
+            <a href="/privacy" className="text-gold-400 underline hover:text-ivory-100">
+              Privacy Policy
+            </a>
           </p>
           <p>
             Product availability, sample terms, tolerances and dispatch terms are confirmed per

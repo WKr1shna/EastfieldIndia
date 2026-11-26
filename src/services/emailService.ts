@@ -23,31 +23,41 @@ export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOu
     return { sent: false, provider: "none" };
   }
 
-  const isSample = lead.enquiryType === "Request a Sample";
+  const label = lead.requestedSample
+    ? "Request a Sample"
+    : lead.leadSource === "entry_popup"
+    ? "Website Entry Lead"
+    : "General Business Enquiry";
 
   const rows: Array<[string, string]> = [
     ["Reference ID", lead.id],
-    ["Enquiry Type", lead.enquiryType],
-    ["Company Name", lead.company],
-    ["Contact Name", lead.name],
+    ["Lead Category", label],
+    ["Full Name", lead.name],
     ["Mobile Number", lead.phone],
+    ["Company Name", lead.company],
     ["Email Address", lead.email],
-    ...(isSample
+    ["Lead Source", lead.leadSource],
+    ...(lead.requestedSample && lead.sampleDetails
       ? ([
-          ["Requested Grade", lead.grade || "Not sure"],
-          ["Sample Requirement", lead.sampleRequirement || "Not specified"],
-          ["Shipping Destination", lead.destination || "Not specified"],
+          ["Requested Grade", lead.sampleDetails.grade || "Not sure"],
+          ["Sample Requirement", lead.sampleDetails.sampleRequirement || "Not specified"],
+          ["Shipping Destination", lead.sampleDetails.destination || "Not specified"],
+          [
+            "Sample Requirements Notes",
+            lead.sampleDetails.additionalRequirements || "None",
+          ],
         ] as Array<[string, string]>)
       : []),
     ["Additional Message", lead.additionalMessage || "None"],
+    ["First Visit", lead.firstVisitAt],
     ["Submitted At", lead.submittedAt],
   ];
 
   const htmlRows = rows
     .map(
-      ([label, val]) =>
+      ([col, val]) =>
         `<tr><td style="padding:8px 12px;border-bottom:1px solid #e4decb;font-weight:600;color:#193A31;width:210px;">${escapeHtml(
-          label
+          col
         )}</td><td style="padding:8px 12px;border-bottom:1px solid #e4decb;color:#243832;">${escapeHtml(
           val
         )}</td></tr>`
@@ -59,7 +69,7 @@ export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOu
       <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #ded6c1;border-radius:10px;overflow:hidden;">
         <div style="background:#0B3027;color:#F5F1E5;padding:20px 24px;">
           <div style="font-size:12px;letter-spacing:0.14em;color:#C6A45C;text-transform:uppercase;">EastField India · ${escapeHtml(
-            lead.enquiryType
+            label
           )}</div>
           <h1 style="margin:6px 0 0;font-size:20px;font-weight:600;">${escapeHtml(
             lead.company
@@ -81,7 +91,7 @@ export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOu
         from: fromEmail,
         to: [toEmail],
         reply_to: lead.email,
-        subject: `[EastField ${isSample ? "Sample Request" : "Business Enquiry"}] ${lead.company}`,
+        subject: `[EastField ${label}] ${lead.company} (${lead.name})`,
         html,
       }),
     });

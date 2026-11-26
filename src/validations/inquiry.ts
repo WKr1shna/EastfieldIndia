@@ -9,8 +9,11 @@ export const PRODUCT_GRADES = [
   "Not sure",
 ] as const;
 
-export const ENQUIRY_TYPES = ["enquiry", "sample"] as const;
+export const ENQUIRY_TYPES = ["entry_lead", "enquiry", "sample"] as const;
 export type EnquiryMode = (typeof ENQUIRY_TYPES)[number];
+
+export const LEAD_SOURCES = ["entry_popup", "sample_gate", "general_enquiry"] as const;
+export type LeadSource = (typeof LEAD_SOURCES)[number];
 
 const phoneValidation = z
   .string()
@@ -27,25 +30,40 @@ const phoneValidation = z
   );
 
 const mandatoryLeadFields = {
-  company: z
-    .string()
-    .trim()
-    .min(2, "Company name is required (at least 2 characters).")
-    .max(160, "Company name must be 160 characters or fewer."),
   name: z
     .string()
     .trim()
     .min(2, "Full name is required (at least 2 characters).")
     .max(120, "Full name must be 120 characters or fewer."),
   phone: phoneValidation,
+  company: z
+    .string()
+    .trim()
+    .min(2, "Company name is required (at least 2 characters).")
+    .max(160, "Company name must be 160 characters or fewer."),
   email: z
     .string()
     .trim()
     .email("Please enter a valid business email address.")
     .max(180, "Email address is too long."),
+  visitorId: z.string().trim().max(80).optional().default(""),
+  leadId: z.string().trim().max(80).optional().default(""),
+  firstVisitAt: z.string().trim().max(64).optional().default(""),
+  latestVisitAt: z.string().trim().max(64).optional().default(""),
+  leadSource: z.enum(LEAD_SOURCES).optional().default("general_enquiry"),
+  skippedInitial: z.boolean().optional().default(false),
   website: z.string().max(0, "Spam detected.").optional().default(""),
   formStartedAt: z.number().optional(),
 };
+
+export const entryLeadSchema = z.object({
+  ...mandatoryLeadFields,
+  requestType: z.literal("entry_lead"),
+  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
+  sampleRequirement: z.string().trim().max(240).optional().default(""),
+  destination: z.string().trim().max(160).optional().default(""),
+  details: z.string().trim().max(1500).optional().default(""),
+});
 
 export const generalEnquirySchema = z.object({
   ...mandatoryLeadFields,
@@ -86,6 +104,7 @@ export const sampleRequestSchema = z.object({
 });
 
 const leadUnionSchema = z.discriminatedUnion("requestType", [
+  entryLeadSchema,
   generalEnquirySchema,
   sampleRequestSchema,
 ]);

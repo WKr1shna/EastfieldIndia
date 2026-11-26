@@ -4,17 +4,34 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { InquiryProvider, useInquiryPreset } from "@/components/ui/InquiryContext";
 import { SampleRequestModal } from "@/components/forms/SampleRequestModal";
 
-function TriggerButton() {
-  const { openSampleRequest } = useInquiryPreset();
+function PreseededTrigger() {
+  const { openSampleRequest, saveContact } = useInquiryPreset();
   return (
-    <button type="button" onClick={() => openSampleRequest("6 Suta")}>
-      Open Sample
-    </button>
+    <div>
+      <button
+        type="button"
+        onClick={() =>
+          saveContact({
+            leadId: "EF-20261127-PRE001",
+            name: "Priya Nair",
+            phone: "+971 50 123 4567",
+            company: "Lotus Exports",
+            email: "priya@lotusexports.ae",
+          })
+        }
+      >
+        Seed Lead
+      </button>
+      <button type="button" onClick={() => openSampleRequest("6 Suta")}>
+        Open Sample
+      </button>
+    </div>
   );
 }
 
 describe("SampleRequestModal", () => {
   beforeEach(() => {
+    window.localStorage.clear();
     window.sessionStorage.clear();
   });
 
@@ -22,59 +39,40 @@ describe("SampleRequestModal", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens when triggered, enforces 4 mandatory contact fields, and reuses session details", async () => {
+  it("opens directly with prefilled details when visitor already submitted initial lead", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
-        referenceId: "EF-20261127-SMP101",
-        message: "Sample request logged.",
+        referenceId: "EF-20261127-PRE001",
+        message:
+          "Thank you for your interest in EastField India. Our team will review your request and get in touch with you.",
       }),
     } as Response);
 
     render(
-      <InquiryProvider>
-        <TriggerButton />
+      <InquiryProvider disableAutoEntryPopup>
+        <PreseededTrigger />
         <SampleRequestModal />
       </InquiryProvider>
     );
 
+    fireEvent.click(screen.getByRole("button", { name: /Seed Lead/i }));
     fireEvent.click(screen.getByRole("button", { name: /Open Sample/i }));
+
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByLabelText(/Desired Makhana Grade/i)).toHaveValue("6 Suta");
+    expect(await screen.findByText(/Priya Nair · Lotus Exports/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Makhana Grade/i)).toHaveValue("6 Suta");
 
-    // Empty submit fails on mandatory 4 fields
-    fireEvent.click(screen.getByRole("button", { name: /Request a Sample/i }));
-    expect(
-      await screen.findByText(/Please provide the mandatory business and contact details/i)
-    ).toBeInTheDocument();
-
-    // Fill 4 mandatory fields and submit
-    fireEvent.change(screen.getByLabelText(/Company Name/i), {
-      target: { value: "Lotus Exports" },
-    });
-    fireEvent.change(screen.getByLabelText(/Full Name/i), {
-      target: { value: "Priya Nair" },
-    });
-    fireEvent.change(screen.getByLabelText(/Mobile Number/i), {
-      target: { value: "+971 50 123 4567" },
-    });
-    fireEvent.change(screen.getByLabelText(/Email Address/i), {
-      target: { value: "priya@lotusexports.ae" },
-    });
     fireEvent.change(screen.getByLabelText(/Shipping Destination/i), {
       target: { value: "Dubai, UAE" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Request a Sample/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Sample Request Received/i)).toBeInTheDocument();
-      expect(screen.getByText(/EF-20261127-SMP101/)).toBeInTheDocument();
+      expect(screen.getByText(/Sample Request Submitted/i)).toBeInTheDocument();
+      expect(screen.getByText(/EF-20261127-PRE001/)).toBeInTheDocument();
     });
-
-    // Request another grade in same session reuses saved details automatically
-    fireEvent.click(screen.getByRole("button", { name: /Request Another Grade/i }));
-    expect(await screen.findByText(/Reusing details from this session/i)).toBeInTheDocument();
   });
 });

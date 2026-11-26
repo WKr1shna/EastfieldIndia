@@ -79,6 +79,6 @@ describe("InquiryFormSection (minimal 4-field General Business Enquiry)", () => 
       expect(screen.getByText(/EF-20261127-LEAD01/)).toBeInTheDocument();
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(window.sessionStorage.getItem("eastfield_session_contact_v1")).toContain("Verma Foods");
+    expect(window.localStorage.getItem("eastfield_visitor_lead_v1")).toContain("Verma Foods");
   });
 });

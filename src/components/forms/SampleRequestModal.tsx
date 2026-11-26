@@ -10,17 +10,17 @@ export function SampleRequestModal() {
   const {
     isSampleModalOpen,
     selectedGrade,
+    visitorState,
     savedContact,
     hasSavedContact,
     setSelectedGrade,
     saveContact,
-    clearContact,
     closeSampleModal,
   } = useInquiryPreset();
 
-  const [company, setCompany] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [sampleRequirement, setSampleRequirement] = useState("");
   const [destination, setDestination] = useState("");
@@ -34,15 +34,17 @@ export function SampleRequestModal() {
   const [referenceId, setReferenceId] = useState("");
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
-  // Sync saved session contact into fields whenever modal opens
   useEffect(() => {
     if (!isSampleModalOpen) return;
     const raf = window.requestAnimationFrame(() => {
       setFormStartedAt(Date.now());
+      setStatus("idle");
+      setServerMessage("");
+      setFieldErrors({});
       if (hasSavedContact) {
-        setCompany(savedContact.company);
         setName(savedContact.name);
         setPhone(savedContact.phone);
+        setCompany(savedContact.company);
         setEmail(savedContact.email);
         setEditingSaved(false);
       } else {
@@ -52,7 +54,6 @@ export function SampleRequestModal() {
     return () => window.cancelAnimationFrame(raf);
   }, [isSampleModalOpen, hasSavedContact, savedContact]);
 
-  // Close on Escape and lock body scroll while open
   useEffect(() => {
     if (!isSampleModalOpen) return;
     const prevOverflow = document.body.style.overflow;
@@ -87,10 +88,16 @@ export function SampleRequestModal() {
 
     const payload = {
       requestType: "sample" as const,
-      company,
       name,
       phone,
+      company,
       email,
+      leadId: savedContact.leadId,
+      visitorId: visitorState.visitorId,
+      firstVisitAt: visitorState.firstVisitAt,
+      latestVisitAt: visitorState.latestVisitAt,
+      leadSource: visitorState.skippedInitial ? ("sample_gate" as const) : ("entry_popup" as const),
+      skippedInitial: visitorState.skippedInitial,
       grade: selectedGrade,
       sampleRequirement,
       destination,
@@ -113,7 +120,7 @@ export function SampleRequestModal() {
         setEditingSaved(true);
       }
       setStatus("error");
-      setServerMessage("Please provide the mandatory business and contact details.");
+      setServerMessage("Please verify your business and contact details before submitting.");
       return;
     }
 
@@ -142,12 +149,18 @@ export function SampleRequestModal() {
         return;
       }
 
-      saveContact({ company, name, phone, email });
+      saveContact({
+        leadId: data.referenceId || savedContact.leadId,
+        name,
+        phone,
+        company,
+        email,
+      });
       setStatus("success");
       setReferenceId(data.referenceId || "");
       setServerMessage(
         data.message ||
-          "Thank you. Your sample request has been received. We will review sample availability and coordinate the next steps."
+          "Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
       );
       setSampleRequirement("");
       setDestination("");
@@ -209,7 +222,7 @@ export function SampleRequestModal() {
                 <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
               </div>
               <h3 className="mt-4 font-serif text-2xl font-medium text-forest-900">
-                Sample Request Received
+                Sample Request Submitted
               </h3>
               {referenceId && (
                 <p className="mt-2 inline-block rounded-full bg-ivory-200 px-3.5 py-1 font-mono text-xs font-semibold text-forest-900">
@@ -268,80 +281,35 @@ export function SampleRequestModal() {
                 </div>
               )}
 
-              {/* Step 1: Mandatory Business & Contact Details (or Smart Session Reuse Summary) */}
+              {/* Saved Business Details Summary (No forced re-entry) */}
               <div className="rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
-                    1. Business &amp; Contact Details <span className="text-red-700">*</span>
+                    Your Business Details
                   </p>
-                  {hasSavedContact && !editingSaved && (
-                    <div className="flex items-center gap-3 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => setEditingSaved(true)}
-                        className="inline-flex items-center gap-1 font-semibold text-forest-800 hover:text-gold-600"
-                      >
-                        <Edit3 className="h-3 w-3" aria-hidden="true" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          clearContact();
-                          setCompany("");
-                          setName("");
-                          setPhone("");
-                          setEmail("");
-                          setEditingSaved(true);
-                        }}
-                        className="text-ink-500 hover:text-red-700"
-                      >
-                        Clear
-                      </button>
-                    </div>
+                  {!editingSaved && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingSaved(true)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-forest-800 hover:text-gold-600"
+                    >
+                      <Edit3 className="h-3 w-3" aria-hidden="true" />
+                      <span>Edit</span>
+                    </button>
                   )}
                 </div>
 
-                {hasSavedContact && !editingSaved ? (
-                  <div className="mt-3 rounded-lg border border-ivory-200 bg-ivory-50 px-3.5 py-2.5 text-xs text-ink-800">
+                {!editingSaved ? (
+                  <div className="mt-2.5 rounded-lg border border-ivory-200 bg-ivory-50 px-3.5 py-2.5 text-xs text-ink-800">
                     <p className="font-semibold text-forest-900">
-                      Reusing details from this session:
+                      {name} · {company}
                     </p>
-                    <p className="mt-1">
-                      {company} · {name} · {phone} · {email}
+                    <p className="mt-0.5 text-ink-600">
+                      {phone} · {email}
                     </p>
                   </div>
                 ) : (
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="sample-company"
-                        className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
-                      >
-                        Company Name <span className="text-red-700">*</span>
-                      </label>
-                      <input
-                        id="sample-company"
-                        name="company"
-                        type="text"
-                        required
-                        autoComplete="organization"
-                        value={company}
-                        onChange={(e) => {
-                          setCompany(e.target.value);
-                          clearFieldError("company");
-                        }}
-                        aria-invalid={Boolean(fieldErrors.company)}
-                        placeholder="Business or company name"
-                        className={`${inputClass} ${
-                          fieldErrors.company ? "border-red-500" : "border-ivory-300"
-                        }`}
-                      />
-                      {fieldErrors.company && (
-                        <p className="mt-1 text-xs text-red-700">{fieldErrors.company}</p>
-                      )}
-                    </div>
-
                     <div>
                       <label
                         htmlFor="sample-name"
@@ -361,7 +329,7 @@ export function SampleRequestModal() {
                           clearFieldError("name");
                         }}
                         aria-invalid={Boolean(fieldErrors.name)}
-                        placeholder="Contact person's full name"
+                        placeholder="Your full name"
                         className={`${inputClass} ${
                           fieldErrors.name ? "border-red-500" : "border-ivory-300"
                         }`}
@@ -402,6 +370,35 @@ export function SampleRequestModal() {
 
                     <div>
                       <label
+                        htmlFor="sample-company"
+                        className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                      >
+                        Company Name <span className="text-red-700">*</span>
+                      </label>
+                      <input
+                        id="sample-company"
+                        name="company"
+                        type="text"
+                        required
+                        autoComplete="organization"
+                        value={company}
+                        onChange={(e) => {
+                          setCompany(e.target.value);
+                          clearFieldError("company");
+                        }}
+                        aria-invalid={Boolean(fieldErrors.company)}
+                        placeholder="Business or company name"
+                        className={`${inputClass} ${
+                          fieldErrors.company ? "border-red-500" : "border-ivory-300"
+                        }`}
+                      />
+                      {fieldErrors.company && (
+                        <p className="mt-1 text-xs text-red-700">{fieldErrors.company}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
                         htmlFor="sample-email"
                         className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                       >
@@ -432,10 +429,10 @@ export function SampleRequestModal() {
                 )}
               </div>
 
-              {/* Step 2: Sample Specification (Separate & Streamlined) */}
+              {/* Streamlined Optional Sample Specification */}
               <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
-                  2. Sample Specification
+                  Sample Details <span className="font-normal text-ink-500">(Optional)</span>
                 </p>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -444,7 +441,7 @@ export function SampleRequestModal() {
                       htmlFor="sample-grade"
                       className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                     >
-                      Desired Makhana Grade
+                      Makhana Grade
                     </label>
                     <select
                       id="sample-grade"
@@ -519,8 +516,7 @@ export function SampleRequestModal() {
 
               <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <p className="text-xs text-ink-600">
-                  Tell us about your requirement. We&apos;ll review sample availability and
-                  coordinate the next steps.
+                  Our team will review sample availability and coordinate the next steps.
                 </p>
                 <button
                   type="submit"
@@ -534,7 +530,7 @@ export function SampleRequestModal() {
                     </>
                   ) : (
                     <>
-                      <span>Request a Sample</span>
+                      <span>REQUEST A SAMPLE</span>
                       <Send className="h-3.5 w-3.5" aria-hidden="true" />
                     </>
                   )}

@@ -3,79 +3,150 @@
 import { useCallback, useState } from "react";
 
 export interface SessionBusinessContact {
-  company: string;
+  leadId: string;
   name: string;
   phone: string;
+  company: string;
   email: string;
 }
 
-const SESSION_KEY = "eastfield_session_contact_v1";
+export interface VisitorLeadState {
+  visitorId: string;
+  firstVisitAt: string;
+  latestVisitAt: string;
+  skippedInitial: boolean;
+  submittedLead: SessionBusinessContact | null;
+}
 
-const EMPTY_CONTACT: SessionBusinessContact = {
-  company: "",
-  name: "",
-  phone: "",
-  email: "",
-};
+const STORAGE_KEY = "eastfield_visitor_lead_v1";
 
-function readStoredContact(): SessionBusinessContact {
-  if (typeof window === "undefined") return EMPTY_CONTACT;
-  try {
-    const raw = window.sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return EMPTY_CONTACT;
-    const parsed = JSON.parse(raw) as Partial<SessionBusinessContact>;
+function generateVisitorId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `v_${crypto.randomUUID()}`;
+  }
+  return `v_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readVisitorState(): VisitorLeadState {
+  const now = new Date().toISOString();
+  if (typeof window === "undefined") {
     return {
-      company: typeof parsed.company === "string" ? parsed.company : "",
-      name: typeof parsed.name === "string" ? parsed.name : "",
-      phone: typeof parsed.phone === "string" ? parsed.phone : "",
-      email: typeof parsed.email === "string" ? parsed.email : "",
+      visitorId: "",
+      firstVisitAt: now,
+      latestVisitAt: now,
+      skippedInitial: false,
+      submittedLead: null,
     };
+  }
+
+  try {
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) || window.sessionStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<VisitorLeadState>;
+      return {
+        visitorId: typeof parsed.visitorId === "string" && parsed.visitorId ? parsed.visitorId : generateVisitorId(),
+        firstVisitAt: typeof parsed.firstVisitAt === "string" ? parsed.firstVisitAt : now,
+        latestVisitAt: now,
+        skippedInitial: Boolean(parsed.skippedInitial),
+        submittedLead:
+          parsed.submittedLead &&
+          parsed.submittedLead.name &&
+          parsed.submittedLead.phone &&
+          parsed.submittedLead.company &&
+          parsed.submittedLead.email
+            ? parsed.submittedLead
+            : null,
+      };
+    }
   } catch {
-    return EMPTY_CONTACT;
+    // Ignore storage access errors
+  }
+
+  return {
+    visitorId: generateVisitorId(),
+    firstVisitAt: now,
+    latestVisitAt: now,
+    skippedInitial: false,
+    submittedLead: null,
+  };
+}
+
+function persistVisitorState(next: VisitorLeadState) {
+  if (typeof window === "undefined") return;
+  const serialized = JSON.stringify(next);
+  try {
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+  } catch {
+    // Ignore localStorage failures
+  }
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, serialized);
+  } catch {
+    // Ignore sessionStorage failures
   }
 }
 
 export function useSessionContact() {
-  const [savedContact, setSavedContact] = useState<SessionBusinessContact>(() =>
-    readStoredContact()
-  );
+  const [visitorState, setVisitorState] = useState<VisitorLeadState>(() => readVisitorState());
 
-  const saveContact = useCallback((contact: SessionBusinessContact) => {
-    const clean: SessionBusinessContact = {
-      company: contact.company.trim(),
-      name: contact.name.trim(),
-      phone: contact.phone.trim(),
-      email: contact.email.trim(),
-    };
-    setSavedContact(clean);
-    if (typeof window !== "undefined") {
-      try {
-        window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(clean));
-      } catch {
-        // Ignore storage quota or restricted-context failures
-      }
-    }
+  const saveContact = useCallback((contact: Omit<SessionBusinessContact, "leadId"> & { leadId?: string }) => {
+    setVisitorState((prev) => {
+      const next: VisitorLeadState = {
+        ...prev,
+        latestVisitAt: new Date().toISOString(),
+        submittedLead: {
+          leadId: contact.leadId || prev.submittedLead?.leadId || "",
+          name: contact.name.trim(),
+          phone: contact.phone.trim(),
+          company: contact.company.trim(),
+          email: contact.email.trim(),
+        },
+      };
+      persistVisitorState(next);
+      return next;
+    });
+  }, []);
+
+  const markSkippedInitial = useCallback(() => {
+    setVisitorState((prev) => {
+      const next: VisitorLeadState = {
+        ...prev,
+        latestVisitAt: new Date().toISOString(),
+        skippedInitial: true,
+      };
+      persistVisitorState(next);
+      return next;
+    });
   }, []);
 
   const clearContact = useCallback(() => {
-    setSavedContact(EMPTY_CONTACT);
-    if (typeof window !== "undefined") {
-      try {
-        window.sessionStorage.removeItem(SESSION_KEY);
-      } catch {
-        // Ignore storage failures
-      }
-    }
+    setVisitorState((prev) => {
+      const next: VisitorLeadState = {
+        ...prev,
+        submittedLead: null,
+      };
+      persistVisitorState(next);
+      return next;
+    });
   }, []);
 
-  const hasSavedContact = Boolean(
-    savedContact.company && savedContact.name && savedContact.phone && savedContact.email
-  );
+  const savedContact: SessionBusinessContact = visitorState.submittedLead ?? {
+    leadId: "",
+    name: "",
+    phone: "",
+    company: "",
+    email: "",
+  };
+
+  const hasSavedContact = Boolean(visitorState.submittedLead);
 
   return {
+    visitorState,
     savedContact,
     hasSavedContact,
     saveContact,
+    markSkippedInitial,
     clearContact,
   };
 }

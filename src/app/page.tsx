@@ -12,6 +12,7 @@ import { QualitySection } from "@/components/sections/QualitySection";
 import { ProcurementSection } from "@/components/sections/ProcurementSection";
 import { InquiryFormSection } from "@/components/forms/InquiryFormSection";
 import { SampleRequestModal } from "@/components/forms/SampleRequestModal";
+import { WelcomeLeadModal } from "@/components/forms/WelcomeLeadModal";
 import { Footer } from "@/components/footer/Footer";
 import { siteConfig } from "@/config/site";
 
@@ -57,6 +58,7 @@ export default function HomePage() {
         <InquiryFormSection />
       </main>
       <Footer />
+      <WelcomeLeadModal />
       <SampleRequestModal />
     </>
   );
