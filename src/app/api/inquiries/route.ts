@@ -79,7 +79,6 @@ export async function POST(request: NextRequest) {
 
   const data = parsed.data;
 
-  // Reject automated bot submissions filled impossibly fast (< 1.2s)
   if (typeof data.formStartedAt === "number" && data.formStartedAt > 0) {
     const elapsed = Date.now() - data.formStartedAt;
     if (elapsed >= 0 && elapsed < 1200) {
@@ -92,6 +91,7 @@ export async function POST(request: NextRequest) {
 
   const record: StoredInquiry = {
     id: `EF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 6).toUpperCase()}`,
+    requestType: data.requestType,
     name: sanitizeText(data.name),
     company: sanitizeText(data.company),
     email: sanitizeText(data.email).toLowerCase(),
@@ -99,7 +99,8 @@ export async function POST(request: NextRequest) {
     buyerType: data.buyerType,
     country: sanitizeText(data.country),
     grade: data.grade,
-    quantity: sanitizeText(data.quantity),
+    sampleRequirement: sanitizeText(data.sampleRequirement || ""),
+    quantity: sanitizeText(data.quantity || ""),
     application: sanitizeText(data.application),
     destination: sanitizeText(data.destination),
     packaging: sanitizeText(data.packaging || ""),
@@ -114,12 +115,16 @@ export async function POST(request: NextRequest) {
     sendInquiryNotification(record),
   ]);
 
+  const confirmationMessage =
+    record.requestType === "sample"
+      ? "Thank you. Your sample request has been logged. We will review sample availability and coordinate the next steps."
+      : "Thank you. Your sourcing specification has been logged. Our team will review grade availability, sample criteria, and next steps.";
+
   return NextResponse.json(
     {
       ok: true,
       referenceId: record.id,
-      message:
-        "Thank you. Your sourcing specification has been logged. Our team will review grade availability, sample criteria, and next steps.",
+      message: confirmationMessage,
       delivery: {
         persisted: storage.persisted,
         emailDispatched: emailResult.sent,

@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ArrowRight, CheckCircle2, Layers } from "lucide-react";
 import { MAKHANA_GRADES, SUPPLY_FORMATS, type MakhanaGrade } from "@/features/products/grades";
+import { siteConfig } from "@/config/site";
 import { useInquiryPreset, type GradeOption } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function MakhanaGradesSection() {
-  const [selectedGrade, setSelectedGrade] = useState<MakhanaGrade>(MAKHANA_GRADES[2]); // Default 6 Suta
-  const { requestWithGrade } = useInquiryPreset();
+  const [selectedGrade, setSelectedGrade] = useState<MakhanaGrade>(MAKHANA_GRADES[2]);
+  const { openSampleRequest, requestWithGrade } = useInquiryPreset();
 
   return (
     <section
@@ -20,9 +21,14 @@ export function MakhanaGradesSection() {
         <Reveal>
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div className="max-w-2xl">
-              <p className="text-xs font-semibold tracking-[0.18em] text-gold-400 uppercase">
-                Our Makhana · Commercial Supply
-              </p>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <p className="text-xs font-semibold tracking-[0.18em] text-gold-400 uppercase">
+                  Our Makhana · Commercial Supply
+                </p>
+                <span className="rounded-full border border-gold-500/40 bg-forest-800 px-3 py-0.5 text-[10px] font-bold tracking-[0.14em] text-gold-400 uppercase">
+                  {siteConfig.productPromise}
+                </span>
+              </div>
               <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ivory-50 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
                 Grades matched to the requirement.
               </h2>
@@ -88,10 +94,15 @@ export function MakhanaGradesSection() {
                         {grade.summary}
                       </p>
                     </div>
-                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider text-ivory-100/90 uppercase group-hover:text-gold-400">
-                      <span>{isSelected ? "Selected Grade" : "Inspect Spec"}</span>
-                      <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                    </span>
+                    <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                      <span className="text-[10px] font-semibold tracking-wider text-ivory-300/80 uppercase">
+                        Guilt-Free · Gluten-Free
+                      </span>
+                      <ArrowRight
+                        className="h-3.5 w-3.5 text-gold-400 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </div>
                   </div>
                 </button>
               );
@@ -130,7 +141,9 @@ export function MakhanaGradesSection() {
                   <span className="rounded-full border border-gold-500/40 bg-gold-500/15 px-3 py-1 text-xs font-semibold tracking-wider text-gold-400 uppercase">
                     Indicative Grade Family
                   </span>
-                  <span className="text-xs text-ivory-300/80">Lot-by-lot confirmation</span>
+                  <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-ivory-100 uppercase">
+                    {siteConfig.productPromise}
+                  </span>
                 </div>
 
                 <h3 className="mt-4 font-serif text-2xl font-medium text-ivory-50 sm:text-3xl">
@@ -159,18 +172,24 @@ export function MakhanaGradesSection() {
                   </div>
                 </dl>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="mt-6 flex flex-wrap items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => requestWithGrade(selectedGrade.inquiryValue as GradeOption)}
-                    className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold tracking-wide text-forest-950 transition-colors hover:bg-gold-400"
+                    onClick={() => openSampleRequest(selectedGrade.inquiryValue as GradeOption)}
+                    className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold tracking-wide text-forest-950 uppercase transition-colors hover:bg-gold-400"
                   >
-                    <span>Inquire for {selectedGrade.name}</span>
+                    <span>Request a Sample · {selectedGrade.name}</span>
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </button>
-                  <span className="text-xs text-ivory-300/80">
-                    Samples evaluated against agreed acceptance criteria
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      requestWithGrade(selectedGrade.inquiryValue as GradeOption, "specification")
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-forest-800/50 px-5 py-3 text-xs font-semibold tracking-wider text-ivory-100 uppercase transition-colors hover:border-gold-400/60"
+                  >
+                    <span>Discuss Bulk Spec</span>
+                  </button>
                 </div>
               </div>
             </div>

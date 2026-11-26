@@ -23,21 +23,26 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
     return { sent: false, provider: "none" };
   }
 
+  const isSample = inquiry.requestType === "sample";
+
   const rows: Array<[string, string]> = [
     ["Reference ID", inquiry.id],
-    ["Name", inquiry.name],
+    ["Request Type", isSample ? "Sample Request" : "B2B Bulk Specification"],
+    ["Full Name", inquiry.name],
     ["Company", inquiry.company],
     ["Business Email", inquiry.email],
     ["Phone", inquiry.phone],
     ["Buyer Type", inquiry.buyerType],
     ["Country", inquiry.country],
     ["Product Grade", inquiry.grade],
-    ["Quantity Required", inquiry.quantity],
+    ...(isSample
+      ? ([["Sample Requirement", inquiry.sampleRequirement || "Not specified"]] as Array<[string, string]>)
+      : ([["Quantity Required", inquiry.quantity || "Not specified"]] as Array<[string, string]>)),
     ["Intended Application", inquiry.application],
-    ["Destination", inquiry.destination],
+    ["Shipping Destination", inquiry.destination],
     ["Packaging Requirements", inquiry.packaging || "Not specified"],
     ["Quality Requirements", inquiry.quality || "Not specified"],
-    ["Additional Details", inquiry.details || "None"],
+    ["Additional Requirements", inquiry.details || "None"],
     ["Submitted At", inquiry.submittedAt],
   ];
 
@@ -52,14 +57,19 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
     )
     .join("");
 
+  const headingDetail = isSample ? inquiry.sampleRequirement : inquiry.quantity;
+  const tag = isSample ? "Sample Request" : "B2B Requirement Brief";
+
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;background:#F5F1E5;padding:24px;">
       <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #ded6c1;border-radius:10px;overflow:hidden;">
         <div style="background:#0B3027;color:#F5F1E5;padding:20px 24px;">
-          <div style="font-size:12px;letter-spacing:0.14em;color:#C6A45C;text-transform:uppercase;">EastField India · B2B Requirement Brief</div>
+          <div style="font-size:12px;letter-spacing:0.14em;color:#C6A45C;text-transform:uppercase;">EastField India · ${escapeHtml(
+            tag
+          )}</div>
           <h1 style="margin:6px 0 0;font-size:20px;font-weight:600;">${escapeHtml(
             inquiry.grade
-          )} — ${escapeHtml(inquiry.quantity)} (${escapeHtml(inquiry.company)})</h1>
+          )} — ${escapeHtml(headingDetail || "General")} (${escapeHtml(inquiry.company)})</h1>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:14px;">${htmlRows}</table>
       </div>
@@ -77,7 +87,7 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
         from: fromEmail,
         to: [toEmail],
         reply_to: inquiry.email,
-        subject: `[EastField B2B Inquiry] ${inquiry.grade} | ${inquiry.quantity} | ${inquiry.company}`,
+        subject: `[EastField ${isSample ? "Sample" : "B2B"}] ${inquiry.grade} | ${inquiry.company}`,
         html,
       }),
     });

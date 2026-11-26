@@ -1,9 +1,11 @@
 import React from "react";
 import { Header } from "@/components/navigation/Header";
 import { HeroSection } from "@/components/hero/HeroSection";
+import { BrandPromiseStrip } from "@/components/ui/BrandPromiseStrip";
 import { WhoWeAreSection } from "@/components/sections/WhoWeAreSection";
 import { SourcingRegionSection } from "@/components/sections/SourcingRegionSection";
 import { FounderStorySection } from "@/components/sections/FounderStorySection";
+import { WhyMakhanaSection } from "@/components/sections/WhyMakhanaSection";
 import { MakhanaGradesSection } from "@/components/sections/MakhanaGradesSection";
 import { B2BBuyersSection } from "@/components/sections/B2BBuyersSection";
 import { QualitySection } from "@/components/sections/QualitySection";
@@ -19,6 +21,7 @@ export default function HomePage() {
     name: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
+    taxID: siteConfig.gstin,
     address: {
       "@type": "PostalAddress",
       addressRegion: "Bihar",
@@ -41,9 +44,11 @@ export default function HomePage() {
       <Header />
       <main id="main-content">
         <HeroSection />
+        <BrandPromiseStrip />
         <WhoWeAreSection />
         <SourcingRegionSection />
         <FounderStorySection />
+        <WhyMakhanaSection />
         <MakhanaGradesSection />
         <B2BBuyersSection />
         <QualitySection />

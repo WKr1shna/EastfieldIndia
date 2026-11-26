@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { MAKHANA_GRADES } from "@/features/products/grades";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 
 export function Footer() {
+  const { openSampleRequest } = useInquiryPreset();
+
   return (
     <footer className="bg-forest-950 text-ivory-200">
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10 lg:py-16">
@@ -12,7 +17,10 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-5">
             <BrandMark variant="dark" subtitle="Bihar-Origin Makhana" />
-            <p className="mt-5 max-w-sm font-serif text-lg leading-snug text-ivory-100">
+            <p className="mt-5 inline-block rounded-full border border-gold-500/35 bg-forest-900 px-3.5 py-1 text-[11px] font-bold tracking-[0.16em] text-gold-400 uppercase">
+              {siteConfig.productPromise}
+            </p>
+            <p className="mt-4 max-w-sm font-serif text-lg leading-snug text-ivory-100">
               {siteConfig.tagline}
             </p>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-ivory-300/80">
@@ -67,21 +75,23 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* B2B Inquiry & Leadership */}
+          {/* B2B Sample & Sourcing Desk */}
           <div className="lg:col-span-3">
             <h3 className="text-xs font-semibold tracking-[0.16em] text-gold-400 uppercase">
-              B2B Sourcing Desk
+              B2B Sample &amp; Sourcing Desk
             </h3>
             <p className="mt-4 text-sm leading-relaxed text-ivory-300/85">
-              Share grade, quantity, intended application, and destination for lot-level review.
+              Tell us about your requirement. We&apos;ll review sample availability and coordinate
+              the next steps.
             </p>
-            <a
-              href="#inquiry"
+            <button
+              type="button"
+              onClick={() => openSampleRequest()}
               className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-xs font-semibold tracking-wider text-forest-950 uppercase transition-colors hover:bg-gold-400"
             >
-              <span>Discuss Your Requirement</span>
+              <span>Request a Sample</span>
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </a>
+            </button>
 
             <div className="mt-6 border-t border-white/10 pt-4 text-xs text-ivory-300/80">
               <p>Founder: {siteConfig.founder.name}</p>
@@ -100,10 +110,12 @@ export function Footer() {
 
         <div className="mt-8 flex flex-col justify-between gap-4 text-xs text-ivory-300/70 sm:flex-row sm:items-center">
           <p>
-            © {new Date().getFullYear()} {siteConfig.name} · Bihar, India.
+            © {new Date().getFullYear()} {siteConfig.name} · Bihar, India · GSTIN:{" "}
+            {siteConfig.gstin}
           </p>
           <p>
-            Product availability, pricing, tolerances and dispatch terms are confirmed per enquiry.
+            Product availability, sample terms, tolerances and dispatch terms are confirmed per
+            enquiry.
           </p>
         </div>
       </div>

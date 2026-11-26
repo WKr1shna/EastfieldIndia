@@ -4,6 +4,8 @@ export const siteConfig = {
   subtitle: "Bihar-Origin Makhana",
   positioning: "Makhana Aggregation & B2B Supply",
   tagline: "Rooted in Bihar. Inspired by India. Made for the World.",
+  productPromise: "Guilt-Free. Gluten-Free.",
+  productPromiseSub: "Crunchy by nature. Naturally satisfying.",
   heroLocation: "Purnea & Katihar · Bihar, India",
   heroPillars: "Aggregation · Quality · B2B Supply",
   description:
@@ -22,9 +24,9 @@ export const siteConfig = {
     { label: "Home", href: "#home" },
     { label: "About", href: "#about" },
     { label: "Sourcing", href: "#sourcing" },
+    { label: "Why Makhana", href: "#why-makhana" },
     { label: "Makhana", href: "#makhana" },
     { label: "Quality", href: "#quality" },
     { label: "Procurement", href: "#procurement" },
-    { label: "Contact", href: "#inquiry" },
   ],
 } as const;

@@ -9,9 +9,14 @@ export function FounderStorySection() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <Reveal>
           <div className="border-b border-ivory-300 pb-8">
-            <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
-              Founder&apos;s Note · Brand Heritage
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
+                Founder&apos;s Note · Brand Heritage
+              </p>
+              <span className="rounded-full border border-forest-800/20 bg-ivory-200 px-3.5 py-1 text-[11px] font-bold tracking-[0.14em] text-forest-900 uppercase">
+                {siteConfig.productPromise}
+              </span>
+            </div>
             <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-5xl lg:leading-[1.15]">
               Rooted in Bihar. Inspired by India.{" "}
               <span className="text-forest-700">Made for the World.</span>
@@ -45,7 +50,16 @@ export function FounderStorySection() {
                   &ldquo;Our roots are Indian. Our vision is global.&rdquo;
                 </blockquote>
 
-                <dl className="mt-7 space-y-3 border-t border-white/15 pt-5 text-xs">
+                <div className="mt-6 rounded-xl border border-white/10 bg-forest-800/60 p-3.5">
+                  <p className="text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
+                    {siteConfig.productPromise}
+                  </p>
+                  <p className="mt-1 text-xs text-ivory-200/85">
+                    {siteConfig.productPromiseSub}
+                  </p>
+                </div>
+
+                <dl className="mt-6 space-y-3 border-t border-white/15 pt-5 text-xs">
                   <div className="flex items-center justify-between">
                     <dt className="text-ivory-300/80">Origin Focus</dt>
                     <dd className="font-semibold text-ivory-100">Bihar, India</dd>

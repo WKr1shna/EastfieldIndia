@@ -3,13 +3,14 @@
 import React from "react";
 import { ArrowRight, Globe2, PackageCheck, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { BUYER_SEGMENTS } from "@/features/sourcing/ecosystems";
+import { siteConfig } from "@/config/site";
 import { useInquiryPreset, type BuyerTypeOption } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 const BUYER_ICONS = [Globe2, PackageCheck, ShoppingBag, UtensilsCrossed] as const;
 
 export function B2BBuyersSection() {
-  const { requestWithBuyerType } = useInquiryPreset();
+  const { openSampleRequest, requestWithBuyerType } = useInquiryPreset();
 
   return (
     <section id="buyers" className="bg-grain-ivory border-b border-ivory-300 py-16 sm:py-24">
@@ -17,9 +18,14 @@ export function B2BBuyersSection() {
         <Reveal>
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div className="max-w-3xl">
-              <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
-                Built for B2B Buyers
-              </p>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
+                  Built for B2B Buyers
+                </p>
+                <span className="rounded-full border border-forest-800/20 bg-white px-3 py-0.5 text-[10px] font-bold tracking-[0.14em] text-forest-900 uppercase">
+                  {siteConfig.productPromise}
+                </span>
+              </div>
               <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
                 One sourcing interface.
                 <br />
@@ -31,13 +37,22 @@ export function B2BBuyersSection() {
               </p>
             </div>
 
-            <a
-              href="#inquiry"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-forest-900 px-6 py-3.5 text-sm font-semibold tracking-wide text-ivory-100 transition-colors hover:bg-forest-800"
-            >
-              <span>Tell Us What You Need</span>
-              <ArrowRight className="h-4 w-4 text-gold-400" aria-hidden="true" />
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => openSampleRequest()}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-forest-900 px-6 py-3.5 text-sm font-semibold tracking-wide text-gold-400 uppercase transition-colors hover:bg-forest-800"
+              >
+                <span>Request a Sample</span>
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <a
+                href="#inquiry"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-forest-800/25 bg-white px-5 py-3.5 text-sm font-semibold tracking-wide text-forest-900 transition-colors hover:border-forest-800"
+              >
+                <span>Tell Us What You Need</span>
+              </a>
+            </div>
           </div>
         </Reveal>
 
@@ -82,13 +97,15 @@ export function B2BBuyersSection() {
                     </ul>
                   </div>
 
-                  <div className="mt-7 border-t border-ivory-200 pt-4">
+                  <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-ivory-200 pt-4">
                     <button
                       type="button"
-                      onClick={() => requestWithBuyerType(segment.inquiryValue as BuyerTypeOption)}
+                      onClick={() =>
+                        requestWithBuyerType(segment.inquiryValue as BuyerTypeOption, "sample")
+                      }
                       className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-forest-800 uppercase transition-colors hover:text-gold-600"
                     >
-                      <span>Share {segment.inquiryValue} Brief</span>
+                      <span>Request Sample ({segment.inquiryValue})</span>
                       <ArrowRight
                         className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
                         aria-hidden="true"

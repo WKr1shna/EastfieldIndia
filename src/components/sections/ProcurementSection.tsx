@@ -1,19 +1,30 @@
+"use client";
+
 import React from "react";
 import { ArrowRight, ClipboardList, SearchCheck, Truck } from "lucide-react";
 import { BUYER_JOURNEY_STEPS, PROCUREMENT_STAGES } from "@/features/procurement/stages";
+import { siteConfig } from "@/config/site";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 const STAGE_ICONS = [ClipboardList, SearchCheck, Truck] as const;
 
 export function ProcurementSection() {
+  const { openSampleRequest } = useInquiryPreset();
+
   return (
     <section id="procurement" className="bg-grain-ivory border-b border-ivory-300 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         <Reveal>
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
-              Procurement Process
-            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
+                Procurement Process
+              </p>
+              <span className="rounded-full border border-forest-800/20 bg-white px-3 py-0.5 text-[10px] font-bold tracking-[0.14em] text-forest-900 uppercase">
+                {siteConfig.productPromise}
+              </span>
+            </div>
             <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]">
               Understand. Source &amp; Verify. Supply.
             </h2>
@@ -80,7 +91,7 @@ export function ProcurementSection() {
             <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
               <div>
                 <p className="text-xs font-semibold tracking-[0.18em] text-gold-400 uppercase">
-                  Our Operating Principle
+                  Our Operating Principle · {siteConfig.productPromise}
                 </p>
                 <p className="mt-3 font-serif text-3xl font-medium leading-tight text-ivory-50 sm:text-4xl">
                   Specification-led.{" "}
@@ -90,13 +101,14 @@ export function ProcurementSection() {
                   Built for repeat buying, not one-off transactions.
                 </p>
               </div>
-              <a
-                href="#inquiry"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-sm font-semibold tracking-wide text-forest-950 transition-colors hover:bg-gold-400"
+              <button
+                type="button"
+                onClick={() => openSampleRequest()}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3.5 text-sm font-semibold tracking-wide text-forest-950 uppercase transition-colors hover:bg-gold-400"
               >
-                <span>Share Your Specification</span>
+                <span>Request a Sample</span>
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
+              </button>
             </div>
           </div>
         </Reveal>

@@ -3,11 +3,26 @@ import { z } from "zod";
 export const BUYER_TYPES = [
   "Importer",
   "Exporter",
-  "Wholesaler",
   "Distributor",
-  "Retail",
-  "E-commerce/D2C",
+  "Wholesaler",
   "Food manufacturer",
+  "Retailer",
+  "Retail",
+  "E-commerce brand",
+  "E-commerce/D2C",
+  "HoReCa",
+  "Institutional buyer",
+  "Other",
+] as const;
+
+export const FORM_BUYER_TYPES = [
+  "Importer",
+  "Exporter",
+  "Distributor",
+  "Wholesaler",
+  "Food manufacturer",
+  "Retailer",
+  "E-commerce brand",
   "HoReCa",
   "Institutional buyer",
   "Other",
@@ -19,10 +34,22 @@ export const PRODUCT_GRADES = [
   "6 Suta",
   "6+ Suta",
   "Custom requirement",
+  "Not sure",
   "Not sure yet",
 ] as const;
 
-export const inquirySchema = z.object({
+export const FORM_PRODUCT_GRADES = [
+  "4 Suta",
+  "5 Suta",
+  "6 Suta",
+  "6+ Suta",
+  "Custom requirement",
+  "Not sure",
+] as const;
+
+export const INQUIRY_MODES = ["sample", "specification"] as const;
+
+const commonFields = {
   name: z
     .string()
     .trim()
@@ -31,7 +58,7 @@ export const inquirySchema = z.object({
   company: z
     .string()
     .trim()
-    .min(2, "Please enter your company or organisation name.")
+    .min(2, "Please enter your company name.")
     .max(160, "Company name must be 160 characters or fewer."),
   email: z
     .string()
@@ -55,11 +82,6 @@ export const inquirySchema = z.object({
   grade: z.enum(PRODUCT_GRADES, {
     message: "Please select a product grade.",
   }),
-  quantity: z
-    .string()
-    .trim()
-    .min(2, "Please specify your required quantity (e.g., 500 kg, 2 MT, 1x20ft container).")
-    .max(120, "Quantity description must be 120 characters or fewer."),
   application: z
     .string()
     .trim()
@@ -68,7 +90,7 @@ export const inquirySchema = z.object({
   destination: z
     .string()
     .trim()
-    .min(2, "Please specify the delivery city, port, or destination.")
+    .min(2, "Please specify the shipping destination or port.")
     .max(160, "Destination must be 160 characters or fewer."),
   packaging: z
     .string()
@@ -88,9 +110,53 @@ export const inquirySchema = z.object({
     .max(2000, "Additional details must be 2000 characters or fewer.")
     .optional()
     .default(""),
-  // Anti-spam fields
   website: z.string().max(0, "Spam detected.").optional().default(""),
   formStartedAt: z.number().optional(),
+};
+
+const sampleInquirySchema = z.object({
+  ...commonFields,
+  requestType: z.literal("sample"),
+  sampleRequirement: z
+    .string()
+    .trim()
+    .min(2, "Please describe your sample requirement (e.g., 500 g 6 Suta evaluation pack).")
+    .max(240, "Sample requirement must be 240 characters or fewer."),
+  quantity: z
+    .string()
+    .trim()
+    .max(120, "Quantity description must be 120 characters or fewer.")
+    .optional()
+    .default(""),
 });
 
-export type InquiryPayload = z.infer<typeof inquirySchema>;
+const specificationInquirySchema = z.object({
+  ...commonFields,
+  requestType: z.literal("specification"),
+  sampleRequirement: z
+    .string()
+    .trim()
+    .max(240, "Sample requirement must be 240 characters or fewer.")
+    .optional()
+    .default(""),
+  quantity: z
+    .string()
+    .trim()
+    .min(2, "Please specify your required quantity (e.g., 500 kg, 2 MT).")
+    .max(120, "Quantity description must be 120 characters or fewer."),
+});
+
+const unionSchema = z.discriminatedUnion("requestType", [
+  sampleInquirySchema,
+  specificationInquirySchema,
+]);
+
+export const inquirySchema = z.preprocess((val) => {
+  if (val && typeof val === "object" && !("requestType" in val)) {
+    return { ...(val as Record<string, unknown>), requestType: "specification" };
+  }
+  return val;
+}, unionSchema);
+
+export type InquiryPayload = z.infer<typeof unionSchema>;
+export type InquiryMode = (typeof INQUIRY_MODES)[number];

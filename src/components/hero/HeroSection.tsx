@@ -1,9 +1,14 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, WheatOff } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 
 export function HeroSection() {
+  const { openSampleRequest } = useInquiryPreset();
+
   return (
     <section
       id="home"
@@ -27,8 +32,9 @@ export function HeroSection() {
               <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
               {siteConfig.heroLocation}
             </span>
-            <span className="rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-medium tracking-wider text-ivory-200/90 uppercase">
-              {siteConfig.heroPillars}
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-xs font-bold tracking-[0.14em] text-ivory-50 uppercase">
+              <WheatOff className="h-3.5 w-3.5 text-gold-400" aria-hidden="true" />
+              {siteConfig.productPromise}
             </span>
           </div>
 
@@ -49,17 +55,19 @@ export function HeroSection() {
           </p>
 
           <p className="mt-3 text-sm font-medium tracking-wide text-gold-400/95">
-            Connecting Bihar&apos;s makhana ecosystem to domestic &amp; global food businesses.
+            {siteConfig.productPromiseSub} · Connecting Bihar&apos;s makhana ecosystem to domestic
+            &amp; global food businesses.
           </p>
 
           <div className="mt-8 flex flex-col gap-3.5 sm:flex-row sm:items-center">
-            <a
-              href="#inquiry"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-gold-500 px-7 py-3.5 text-sm font-semibold tracking-wide text-forest-950 transition-all hover:bg-gold-400"
+            <button
+              type="button"
+              onClick={() => openSampleRequest()}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-gold-500 px-7 py-3.5 text-sm font-semibold tracking-wide text-forest-950 uppercase transition-all hover:bg-gold-400"
             >
-              <span>Discuss Your Requirement</span>
+              <span>Request a Sample</span>
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </a>
+            </button>
             <a
               href="#makhana"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-ivory-200/30 bg-forest-800/40 px-7 py-3.5 text-sm font-semibold tracking-wide text-ivory-100 transition-all hover:border-gold-400/60 hover:bg-forest-800"
@@ -77,9 +85,9 @@ export function HeroSection() {
             </div>
             <div>
               <dt className="text-[11px] font-medium tracking-widest text-ivory-300/75 uppercase">
-                Operating Model
+                Product Nature
               </dt>
-              <dd className="mt-1 text-sm font-semibold text-ivory-100">Specification-Led</dd>
+              <dd className="mt-1 text-sm font-semibold text-ivory-100">Guilt-Free · Gluten-Free</dd>
             </div>
             <div>
               <dt className="text-[11px] font-medium tracking-widest text-ivory-300/75 uppercase">
@@ -104,14 +112,14 @@ export function HeroSection() {
               />
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-forest-950/10 to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-forest-950/85 via-forest-950/10 to-transparent"
               />
             </div>
 
             <figcaption className="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/15 bg-forest-950/85 px-4 py-3 backdrop-blur-sm">
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.16em] text-gold-400 uppercase">
-                  From Source to Scale
+                  {siteConfig.productPromise} · From Source to Scale
                 </p>
                 <p className="mt-0.5 text-xs text-ivory-100/95">
                   Bihar-origin Euryale ferox · Structured aggregation &amp; B2B lot verification
