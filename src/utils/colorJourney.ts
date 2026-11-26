@@ -12,12 +12,12 @@ export interface ColorStop {
  */
 export const BRAND_COLOR_STOPS: ColorStop[] = [
   { at: 0.0, hex: "#0B3027" },
-  { at: 0.14, hex: "#0F382E" },
-  { at: 0.28, hex: "#1B4E3F" },
-  { at: 0.42, hex: "#3B6C5B" },
-  { at: 0.52, hex: "#B9C9BA" },
-  { at: 0.64, hex: "#E5E7DA" },
-  { at: 0.78, hex: "#F2EDE1" },
+  { at: 0.13, hex: "#0F382E" },
+  { at: 0.25, hex: "#1B4E3F" },
+  { at: 0.36, hex: "#356656" },
+  { at: 0.45, hex: "#C2D0C2" },
+  { at: 0.58, hex: "#E6E7DA" },
+  { at: 0.74, hex: "#F2EDE1" },
   { at: 1.0, hex: "#FAF7EE" },
 ];
 
@@ -62,5 +62,5 @@ export function interpolateBrandBackground(progress: number): string {
 }
 
 export function isLightScrollZone(progress: number): boolean {
-  return clampProgress(progress) >= 0.45;
+  return clampProgress(progress) >= 0.42;
 }

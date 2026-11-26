@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export function FounderStorySection() {
   return (
-    <section className="py-16 sm:py-24">
+    <section id="founder" className="border-b border-forest-900/10 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Elevated warm-ivory manuscript frame guarantees crisp readability across green-to-sage transition */}
         <div className="rounded-3xl border border-gold-500/35 bg-ivory-50/96 p-7 shadow-xl backdrop-blur-xs sm:p-10 lg:p-14">

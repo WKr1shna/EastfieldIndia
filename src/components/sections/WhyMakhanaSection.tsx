@@ -207,11 +207,13 @@ export function WhyMakhanaSection() {
                   </div>
                 </div>
               </div>
+
+              <p className="mt-5 border-t border-gold-500/20 pt-4 text-xs leading-relaxed text-ink-600">
+                {NUTRITION_ACCURACY_NOTE}
+              </p>
             </div>
           </div>
         </Reveal>
-
-        <p className="mt-4 text-xs leading-relaxed text-ink-600">{NUTRITION_ACCURACY_NOTE}</p>
       </div>
     </section>
   );

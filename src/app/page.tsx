@@ -5,9 +5,9 @@ import { BrandPromiseStrip } from "@/components/ui/BrandPromiseStrip";
 import { ScrollColorCanvas } from "@/components/ui/ScrollColorCanvas";
 import { WhoWeAreSection } from "@/components/sections/WhoWeAreSection";
 import { SourcingRegionSection } from "@/components/sections/SourcingRegionSection";
-import { FounderStorySection } from "@/components/sections/FounderStorySection";
 import { WhyMakhanaSection } from "@/components/sections/WhyMakhanaSection";
 import { MakhanaGradesSection } from "@/components/sections/MakhanaGradesSection";
+import { FounderStorySection } from "@/components/sections/FounderStorySection";
 import { B2BBuyersSection } from "@/components/sections/B2BBuyersSection";
 import { QualitySection } from "@/components/sections/QualitySection";
 import { ProcurementSection } from "@/components/sections/ProcurementSection";
@@ -51,9 +51,9 @@ export default function HomePage() {
           <BrandPromiseStrip />
           <WhoWeAreSection />
           <SourcingRegionSection />
-          <FounderStorySection />
           <WhyMakhanaSection />
           <MakhanaGradesSection />
+          <FounderStorySection />
           <B2BBuyersSection />
           <QualitySection />
           <ProcurementSection />
