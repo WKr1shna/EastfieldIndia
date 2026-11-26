@@ -2,267 +2,216 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Flame, HeartHandshake, Leaf, Sparkles, WheatOff } from "lucide-react";
+import { ArrowRight, WheatOff } from "lucide-react";
 import {
   CULINARY_APPLICATIONS,
-  MAKHANA_ATTRIBUTES,
   NUTRITION_ACCURACY_NOTE,
-  NUTRITION_HIGHLIGHTS,
   NUTRITIONAL_PROFILE_PILLARS,
+  POSTER_BANNER_BENEFIT,
+  POSTER_LEFT_BENEFITS,
+  POSTER_RIGHT_BENEFITS,
+  type PosterBenefit,
 } from "@/features/products/nutrition";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function WhyMakhanaSection() {
-  const [activeApp, setActiveApp] = useState(CULINARY_APPLICATIONS[0]);
+  const [selectedBenefit, setSelectedBenefit] = useState<PosterBenefit>(POSTER_BANNER_BENEFIT);
   const { openSampleRequest } = useInquiryPreset();
 
   return (
     <section
       id="why-makhana"
-      className="bg-grain-ivory border-b border-ivory-300 py-16 text-ink-900 sm:py-24"
+      className="border-b border-ivory-300 bg-ivory-100 py-16 text-ink-900 sm:py-24"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-        {/* Top Product Story & Recurring Brand Motif */}
+        {/* Poster Container: Warm Cream with Muted Gold Framing */}
         <Reveal>
-          <div className="flex flex-col justify-between gap-6 border-b border-ivory-300 pb-8 lg:flex-row lg:items-end">
-            <div className="max-w-3xl">
-              <div className="inline-flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-forest-900 px-3.5 py-1 text-[11px] font-bold tracking-[0.16em] text-gold-400 uppercase">
-                  <WheatOff className="h-3.5 w-3.5" aria-hidden="true" />
-                  {siteConfig.productPromise}
-                </span>
-                <span className="text-xs font-semibold tracking-[0.14em] text-ink-500 uppercase">
-                  {siteConfig.productPromiseSub}
-                </span>
-              </div>
+          <div className="relative overflow-hidden rounded-3xl border border-gold-500/45 bg-ivory-50 p-6 shadow-sm sm:p-10 lg:p-14">
+            {/* Subtle corner gold hairlines */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-3 rounded-2xl border border-gold-500/20"
+            />
 
-              <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-forest-900 sm:text-4xl lg:text-[2.85rem] lg:leading-[1.12]">
-                Why Makhana?
-              </h2>
-              <p className="mt-3 text-lg font-medium text-forest-800 sm:text-xl">
-                A traditional Indian superfood. A naturally satisfying crunch.
-              </p>
-            </div>
+            <div className="relative">
+              {/* Top Poster Header + Integrated Makhana Visuals */}
+              <div className="grid items-center gap-8 border-b border-gold-500/35 pb-8 lg:grid-cols-12">
+                <div className="text-center lg:col-span-7 lg:text-left">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold-500/50 bg-ivory-200 px-4 py-1.5 text-xs font-extrabold tracking-[0.18em] text-forest-900 uppercase">
+                    <WheatOff className="h-3.5 w-3.5 text-gold-600" aria-hidden="true" />
+                    <span>{siteConfig.productPromise}</span>
+                  </div>
 
-            <button
-              type="button"
-              onClick={() => openSampleRequest()}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-forest-900 px-6 py-3.5 text-xs font-semibold tracking-[0.14em] text-gold-400 uppercase transition-colors hover:bg-forest-800"
-            >
-              <span>Request a Sample</span>
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </Reveal>
-
-        {/* Visual Product Showcase: Close-up Crunch + Core Attributes */}
-        <div className="mt-12 grid items-center gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <Reveal>
-              <figure className="relative overflow-hidden rounded-2xl border border-ivory-300 bg-forest-900 shadow-lg">
-                <div className="relative aspect-[4/3] w-full">
-                  <Image
-                    src="/images/makhana/makhana-closeup-crunch.jpg"
-                    alt="Macro close-up of whole and halved Bihar makhana showing crisp aerated white interior and natural seed-coat flecks"
-                    fill
-                    loading="lazy"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-forest-950/85 via-transparent to-transparent"
-                  />
+                  <h2 className="mt-4 font-serif text-4xl font-semibold tracking-tight text-forest-900 uppercase sm:text-5xl lg:text-6xl">
+                    WHY MAKHANA?
+                  </h2>
+                  <p className="mt-2.5 text-sm font-semibold tracking-[0.14em] text-gold-600 uppercase sm:text-base">
+                    A traditional Indian superfood · Crunchy by nature
+                  </p>
                 </div>
-                <figcaption className="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/15 bg-forest-950/85 px-4 py-3 text-ivory-100 backdrop-blur-sm">
-                  <div>
-                    <p className="text-[11px] font-bold tracking-[0.16em] text-gold-400 uppercase">
-                      {siteConfig.productPromise}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ivory-200/90">
-                      Popped Euryale ferox kernel · Light honeycomb expansion &amp; natural crunch
-                    </p>
-                  </div>
-                </figcaption>
-              </figure>
-            </Reveal>
-          </div>
 
-          <div className="lg:col-span-6">
-            <Reveal delayMs={100}>
-              <p className="text-xs font-semibold tracking-[0.16em] text-gold-600 uppercase">
-                What Makes Makhana Distinct
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-ink-700">
-                Harvested from Bihar&apos;s freshwater wetlands and popped through traditional
-                heat-roasting, makhana (fox nuts / popped lotus seeds) delivers a clean, crisp bite
-                without heavy processing—making it equally prized by conscious snackers and global
-                food brands.
-              </p>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {MAKHANA_ATTRIBUTES.map((attr) => (
-                  <div
-                    key={attr.label}
-                    className="rounded-xl border border-ivory-300 bg-white p-4 shadow-xs"
-                  >
-                    <div className="flex items-center gap-2 text-xs font-bold tracking-wide text-forest-900 uppercase">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-gold-600" aria-hidden="true" />
-                      <span>{attr.label}</span>
-                    </div>
-                    <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{attr.detail}</p>
-                  </div>
-                ))}
+                {/* Integrated Dual Makhana Photography */}
+                <div className="grid grid-cols-2 gap-3 lg:col-span-5">
+                  <figure className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gold-500/35 bg-forest-900">
+                    <Image
+                      src="/images/makhana/makhana-closeup-crunch.jpg"
+                      alt="Close-up of crisp cream-white Bihar makhana puffs showing natural texture"
+                      fill
+                      loading="lazy"
+                      sizes="(max-width: 1024px) 45vw, 20vw"
+                      className="object-cover"
+                    />
+                  </figure>
+                  <figure className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gold-500/35 bg-forest-900">
+                    <Image
+                      src="/images/makhana/makhana-culinary-versatility.jpg"
+                      alt="Stoneware bowl of authentic popped Bihar makhana in natural morning light"
+                      fill
+                      loading="lazy"
+                      sizes="(max-width: 1024px) 45vw, 20vw"
+                      className="object-cover"
+                    />
+                  </figure>
+                </div>
               </div>
-            </Reveal>
-          </div>
-        </div>
 
-        {/* Nutritional & Wellness Characteristics */}
-        <Reveal delayMs={120}>
-          <div className="mt-16">
-            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 uppercase">
-                  Nutritional Characteristics
-                </p>
-                <h3 className="mt-2 font-serif text-2xl font-medium text-forest-900 sm:text-3xl">
-                  Naturally nutrient-dense in its plain form.
-                </h3>
-              </div>
-              <p className="text-xs font-medium tracking-wide text-ink-500 uppercase">
-                India&apos;s traditional crunch, reimagined
-              </p>
-            </div>
-
-            {/* Nutritional Profile Bar */}
-            <div className="mt-6 grid gap-3 rounded-2xl border border-forest-800/15 bg-forest-900 p-5 text-ivory-100 sm:grid-cols-2 lg:grid-cols-5">
-              {NUTRITIONAL_PROFILE_PILLARS.map((item) => (
-                <div
-                  key={item.name}
-                  className="rounded-xl border border-white/10 bg-forest-800/60 px-4 py-3.5"
+              {/* Poster Hero Statement Row */}
+              <div className="border-b border-gold-500/35 py-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => setSelectedBenefit(POSTER_BANNER_BENEFIT)}
+                  aria-pressed={selectedBenefit.id === POSTER_BANNER_BENEFIT.id}
+                  className={`inline-flex flex-col items-center rounded-xl px-6 py-2 transition-colors ${
+                    selectedBenefit.id === POSTER_BANNER_BENEFIT.id
+                      ? "bg-ivory-200/80"
+                      : "hover:bg-ivory-200/50"
+                  }`}
                 >
-                  <p className="text-xs font-bold tracking-wider text-gold-400 uppercase">
-                    {item.name}
-                  </p>
-                  <p className="mt-1 text-xs text-ivory-200/85">{item.note}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* 5 Nutrition & Wellness Cards */}
-            <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {NUTRITION_HIGHLIGHTS.map((card, idx) => {
-                const Icon =
-                  idx === 0
-                    ? HeartHandshake
-                    : idx === 1
-                    ? Leaf
-                    : idx === 2
-                    ? Sparkles
-                    : Flame;
-                return (
-                  <article
-                    key={card.id}
-                    className="flex flex-col justify-between rounded-2xl border border-ivory-300 bg-white p-6 shadow-xs"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-semibold tracking-[0.14em] text-gold-600 uppercase">
-                          {card.eyebrow}
-                        </span>
-                        <Icon className="h-4 w-4 text-forest-700" aria-hidden="true" />
-                      </div>
-                      <h4 className="mt-3 text-sm font-bold tracking-wide text-forest-900 uppercase">
-                        {card.title}
-                      </h4>
-                      <p className="mt-2.5 text-sm leading-relaxed text-ink-600">
-                        {card.description}
-                      </p>
-                    </div>
-
-                    {card.nutrients && (
-                      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-ivory-200 pt-3">
-                        {card.nutrients.map((mineral) => (
-                          <span
-                            key={mineral}
-                            className="rounded-full bg-ivory-200 px-2.5 py-0.5 text-[11px] font-semibold text-forest-900"
-                          >
-                            {mineral}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
-
-              {/* Interactive Culinary & Application Explorer Card */}
-              <article className="flex flex-col justify-between overflow-hidden rounded-2xl border border-forest-800/15 bg-forest-900 text-ivory-100 shadow-md md:col-span-2 lg:col-span-1">
-                <div className="relative aspect-[16/9] w-full">
-                  <Image
-                    src="/images/makhana/makhana-culinary-versatility.jpg"
-                    alt="Plain and lightly toasted spiced makhana bowls with whole spices showing culinary versatility"
-                    fill
-                    loading="lazy"
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                    className="object-cover"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/35 to-transparent"
-                  />
-                  <span className="absolute left-4 top-3 rounded-full border border-gold-500/40 bg-forest-950/85 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-gold-400 uppercase">
-                    Versatile Applications
+                  <span className="text-xl font-extrabold tracking-[0.12em] text-forest-900 uppercase sm:text-3xl">
+                    {POSTER_BANNER_BENEFIT.statement}
                   </span>
+                </button>
+              </div>
+
+              {/* Poster Two-Column Uppercase Grid with Vertical Divider */}
+              <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-gold-500/45">
+                {/* Left Column */}
+                <div className="divide-y divide-gold-500/25 md:pr-8">
+                  {POSTER_LEFT_BENEFITS.map((item) => {
+                    const active = selectedBenefit.id === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedBenefit(item)}
+                        aria-pressed={active}
+                        className={`flex w-full items-center justify-between gap-4 py-5 text-left transition-colors sm:py-6 ${
+                          active ? "text-forest-900" : "text-forest-900/90 hover:text-gold-600"
+                        }`}
+                      >
+                        <span className="text-base font-extrabold tracking-[0.08em] uppercase sm:text-xl">
+                          {item.statement}
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors ${
+                            active ? "bg-gold-500" : "bg-gold-500/30"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="p-5">
-                  <div className="flex flex-wrap gap-1.5">
-                    {CULINARY_APPLICATIONS.map((app) => {
-                      const active = activeApp.id === app.id;
-                      return (
-                        <button
-                          key={app.id}
-                          type="button"
-                          onClick={() => setActiveApp(app)}
-                          aria-pressed={active}
-                          className={`rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
-                            active
-                              ? "bg-gold-500 text-forest-950"
-                              : "bg-forest-800 text-ivory-200 hover:bg-forest-700"
-                          }`}
-                        >
-                          {app.title.split(" ")[0]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <h4 className="mt-3 text-sm font-bold text-ivory-50">{activeApp.title}</h4>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ivory-200/85">
-                    {activeApp.summary}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {activeApp.formats.map((f) => (
-                      <span
-                        key={f}
-                        className="rounded-md border border-white/15 bg-forest-800/70 px-2 py-0.5 text-[10px] text-ivory-200"
+                {/* Right Column */}
+                <div className="divide-y divide-gold-500/25 border-t border-gold-500/25 md:border-t-0 md:pl-8">
+                  {POSTER_RIGHT_BENEFITS.map((item) => {
+                    const active = selectedBenefit.id === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedBenefit(item)}
+                        aria-pressed={active}
+                        className={`flex w-full items-center justify-between gap-4 py-5 text-left transition-colors sm:py-6 ${
+                          active ? "text-forest-900" : "text-forest-900/90 hover:text-gold-600"
+                        }`}
                       >
-                        {f}
+                        <span className="text-base font-extrabold tracking-[0.08em] uppercase sm:text-xl">
+                          {item.statement}
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors ${
+                            active ? "bg-gold-500" : "bg-gold-500/30"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Compact Interactive Context Strip for Selected Poster Statement */}
+              <div className="mt-2 flex flex-col justify-between gap-4 rounded-2xl border border-gold-500/35 bg-forest-900 px-6 py-5 text-ivory-100 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-[11px] font-bold tracking-[0.16em] text-gold-400 uppercase">
+                    {selectedBenefit.statement}
+                  </p>
+                  <p className="mt-1 text-sm text-ivory-100/90">{selectedBenefit.contextLine}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openSampleRequest()}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-xs font-bold tracking-[0.14em] text-forest-950 uppercase transition-colors hover:bg-gold-400"
+                >
+                  <span>Request a Sample</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+
+              {/* Compact Nutritional Profile & Versatility Footer inside Poster */}
+              <div className="mt-6 grid gap-4 border-t border-gold-500/25 pt-6 lg:grid-cols-12">
+                <div className="lg:col-span-7">
+                  <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
+                    Plain Makhana Nutritional Profile
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {NUTRITIONAL_PROFILE_PILLARS.map((pill) => (
+                      <span
+                        key={pill}
+                        className="rounded-full border border-ivory-300 bg-white px-3 py-1 text-xs font-semibold text-forest-900"
+                      >
+                        {pill}
                       </span>
                     ))}
                   </div>
                 </div>
-              </article>
-            </div>
 
-            <p className="mt-5 rounded-xl border border-ivory-300 bg-ivory-50 px-4 py-3 text-xs leading-relaxed text-ink-600">
-              {NUTRITION_ACCURACY_NOTE}
-            </p>
+                <div className="lg:col-span-5">
+                  <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
+                    Commercial &amp; Culinary Versatility
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {CULINARY_APPLICATIONS.map((app) => (
+                      <span
+                        key={app.id}
+                        title={app.summary}
+                        className="rounded-full border border-forest-800/20 bg-ivory-200 px-3 py-1 text-xs font-semibold text-forest-900"
+                      >
+                        {app.title}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Reveal>
+
+        <p className="mt-4 text-xs leading-relaxed text-ink-600">{NUTRITION_ACCURACY_NOTE}</p>
       </div>
     </section>
   );

@@ -1,120 +1,118 @@
-export interface NutritionHighlight {
+export interface PosterBenefit {
   id: string;
-  title: string;
-  eyebrow: string;
-  description: string;
-  nutrients?: string[];
+  statement: string;
+  contextLine: string;
+  column: "banner" | "left" | "right";
 }
 
-export interface ProductAttribute {
-  label: string;
-  detail: string;
-}
+export const POSTER_BANNER_BENEFIT: PosterBenefit = {
+  id: "heart",
+  statement: "SUPPORTS HEART HEALTH",
+  contextLine:
+    "Naturally low in fat in its plain form and contains magnesium and potassium that support normal bodily functions.",
+  column: "banner",
+};
 
-export interface CulinaryApplication {
-  id: string;
-  title: string;
-  summary: string;
-  formats: string[];
-}
-
-export const MAKHANA_ATTRIBUTES: ProductAttribute[] = [
+export const POSTER_LEFT_BENEFITS: PosterBenefit[] = [
   {
-    label: "Naturally Gluten-Free",
-    detail: "Popped seed kernel of Euryale ferox, naturally free from wheat gluten in its plain form.",
+    id: "digestive",
+    statement: "SUPPORTS DIGESTIVE HEALTH",
+    contextLine: "Contains dietary fibre, contributing to a balanced everyday diet.",
+    column: "left",
   },
   {
-    label: "Crunchy Texture",
-    detail: "Light, crisp aerated structure formed through traditional controlled heat-popping.",
+    id: "bone",
+    statement: "SUPPORTS BONE HEALTH",
+    contextLine: "Provides naturally occurring calcium, magnesium, and phosphorus.",
+    column: "left",
   },
   {
-    label: "Plant-Based",
-    detail: "100% botanical aquatic crop cultivated in Bihar's freshwater wetlands.",
+    id: "weight",
+    statement: "SUPPORTS WEIGHT MANAGEMENT",
+    contextLine:
+      "Light, airy popped snack naturally low in fat in its unseasoned plain form.",
+    column: "left",
   },
   {
-    label: "Low Fat (Plain Form)",
-    detail: "Naturally low in fat prior to roasting oil or seasoning additions.",
-  },
-  {
-    label: "Nutrient-Rich Profile",
-    detail: "Contains plant protein, dietary fibre, carbohydrates, and essential minerals.",
-  },
-  {
-    label: "Traditional Indian Heritage",
-    detail: "Consumed across India for generations in fasting foods, sweets, and everyday snacks.",
+    id: "nutrient-rich",
+    statement: "NUTRIENT-RICH",
+    contextLine:
+      "Contains plant protein, carbohydrates, dietary fibre, and essential minerals.",
+    column: "left",
   },
 ];
 
-export const NUTRITION_HIGHLIGHTS: NutritionHighlight[] = [
+export const POSTER_RIGHT_BENEFITS: PosterBenefit[] = [
   {
-    id: "heart",
-    title: "HEART-CONSCIOUS CHOICES",
-    eyebrow: "Naturally Low Fat",
-    description:
-      "Makhana is naturally low in fat in its plain form and contains minerals such as magnesium and potassium that contribute to normal bodily functions.",
+    id: "antioxidants",
+    statement: "RICH IN ANTIOXIDANTS",
+    contextLine:
+      "Naturally contains antioxidant compounds including polyphenols and flavonoids; research is ongoing.",
+    column: "right",
   },
   {
-    id: "digestive",
-    title: "DIGESTIVE WELLNESS",
-    eyebrow: "Dietary Fibre",
-    description:
-      "Makhana contains dietary fibre, which may contribute to a balanced diet and everyday digestive wellness.",
+    id: "plant-based",
+    statement: "SOURCE OF PLANT-BASED NUTRIENTS",
+    contextLine: "100% botanical popped seed kernel of Euryale ferox cultivated in Bihar wetlands.",
+    column: "right",
   },
   {
-    id: "minerals",
-    title: "MINERALS & NUTRIENTS",
-    eyebrow: "Essential Elements",
-    description:
-      "Makhana provides naturally occurring minerals that support normal nutrition as part of a varied diet.",
-    nutrients: ["Magnesium", "Phosphorus", "Potassium", "Calcium", "Iron"],
+    id: "crunchy",
+    statement: "A SATISFYING, CRUNCHY SNACK",
+    contextLine:
+      "Crisp aerated puff texture suited to roasted snacks, culinary dishes, and food formulations.",
+    column: "right",
   },
   {
-    id: "antioxidant",
-    title: "ANTIOXIDANT POTENTIAL",
-    eyebrow: "Phytonutrients",
-    description:
-      "Makhana naturally contains antioxidant compounds, including polyphenols and flavonoids. Research into specific health effects is ongoing.",
-  },
-  {
-    id: "snack",
-    title: "A SATISFYING SNACK",
-    eyebrow: "Crisp & Versatile",
-    description:
-      "Its crunchy texture and light puff structure make it suited to roasted snack ranges, culinary dishes, and clean-label food formulations.",
+    id: "superfood",
+    statement: "TRADITIONAL INDIAN SUPERFOOD",
+    contextLine:
+      "Harvested and enjoyed across India for generations; rooted in Bihar's food heritage.",
+    column: "right",
   },
 ];
 
 export const NUTRITIONAL_PROFILE_PILLARS = [
-  { name: "Carbohydrates", note: "Primary light energy source" },
-  { name: "Protein", note: "Plant-derived seed kernel protein" },
-  { name: "Dietary Fibre", note: "Supports balanced daily intake" },
-  { name: "Essential Minerals", note: "Mg · P · K · Ca · Fe" },
-  { name: "Naturally Low Fat", note: "In unseasoned plain form" },
+  "Carbohydrates",
+  "Protein",
+  "Dietary Fibre",
+  "Magnesium · Phosphorus · Potassium · Calcium · Iron",
+  "Naturally Low Fat (Plain Form)",
 ] as const;
 
-export const CULINARY_APPLICATIONS: CulinaryApplication[] = [
+export const CULINARY_APPLICATIONS = [
   {
     id: "snacking",
     title: "Roasted & Seasoned Snacks",
-    summary:
-      "Absorbs spice blends, olive or ghee glazes, and clean-label seasonings evenly without losing crunch.",
-    formats: ["Flavoured retail packs", "Plain roasted tubs", "Trail & nut mixes"],
+    summary: "Evenly holds clean-label spices and light glazes while keeping its crisp crunch.",
   },
   {
     id: "culinary",
-    title: "Traditional & Modern Culinary",
-    summary:
-      "Used across Indian curries, kheer, festival preparations, and contemporary gluten-free kitchen menus.",
-    formats: ["HoReCa kitchen bulk", "Festive & sweet recipes", "Crisp salad/soup toppers"],
+    title: "Culinary & Kitchen Bulk",
+    summary: "Versatile in traditional Indian recipes, curries, kheer, and gluten-free menus.",
   },
   {
     id: "ingredients",
-    title: "Food Manufacturing & Milling",
-    summary:
-      "Processed into puffed snack bases, roasted flakes, or finely milled gluten-free ingredient flours.",
-    formats: ["4 Suta commercial grades", "Gluten-free snack bases", "Custom nutrition blends"],
+    title: "Food Manufacturing",
+    summary: "Ideal base for puffed snacks, trail mixes, roasted flakes, and milled flours.",
   },
-];
+] as const;
 
 export const NUTRITION_ACCURACY_NOTE =
-  "Makhana is naturally gluten-free and low in fat in its plain, unprocessed form. Gluten-free suitability for finished consumer products depends on agreed processing, seasoning, and packing controls. Nutritional characteristics describe plain makhana seed kernels and are not intended as medical claims.";
+  "Shown in the context of a balanced diet. Makhana is naturally gluten-free and low in fat in its plain, unprocessed form; gluten-free suitability for finished goods depends on agreed processing and packing controls. Statements describe general nutritional characteristics and are not medical claims.";
+
+/**
+ * Internal compliance register: Client-provided traditional/marketing claims
+ * intentionally withheld from public medical claims pending substantiation.
+ */
+export const HELD_CLIENT_CLAIMS_PENDING_SUBSTANTIATION = [
+  "Good for diabetic patients",
+  "Maintains kidney health",
+  "Detoxifies liver",
+  "Improves bone strength",
+  "Cure for diarrhea",
+  "Helps build muscle mass",
+  "Good for fertility in men",
+  "Prevents skin problems",
+  "Anti-aging benefits",
+] as const;
