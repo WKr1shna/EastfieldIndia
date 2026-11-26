@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) {
-      const key = String(issue.path[0] ?? "form");
+      // Support nested shippingAddress.<field> paths cleanly
+      const key = issue.path.length > 0 ? issue.path.join(".") : "form";
       if (!fieldErrors[key]) {
         fieldErrors[key] = issue.message;
       }
@@ -115,6 +116,14 @@ export async function POST(request: NextRequest) {
       ? {
           desiredGrade: data.desiredGrade,
           productType: data.productType,
+          shippingAddress: {
+            addressLine1: sanitizeText(data.shippingAddress.addressLine1),
+            addressLine2: sanitizeText(data.shippingAddress.addressLine2 || ""),
+            city: sanitizeText(data.shippingAddress.city),
+            state: sanitizeText(data.shippingAddress.state),
+            postalCode: sanitizeText(data.shippingAddress.postalCode),
+            country: sanitizeText(data.shippingAddress.country),
+          },
           additionalRequirements: sanitizeText(data.details || ""),
         }
       : null,

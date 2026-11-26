@@ -41,6 +41,15 @@ export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOu
       ? ([
           ["Desired Makhana Grade", lead.sampleDetails.desiredGrade],
           ["Product Type", lead.sampleDetails.productType],
+          ["Address Line 1", lead.sampleDetails.shippingAddress.addressLine1],
+          [
+            "Address Line 2",
+            lead.sampleDetails.shippingAddress.addressLine2 || "Not specified",
+          ],
+          ["City", lead.sampleDetails.shippingAddress.city],
+          ["State / Province / Region", lead.sampleDetails.shippingAddress.state],
+          ["Postal Code / PIN Code", lead.sampleDetails.shippingAddress.postalCode],
+          ["Country", lead.sampleDetails.shippingAddress.country],
           [
             "Additional Requirements",
             lead.sampleDetails.additionalRequirements || "None",

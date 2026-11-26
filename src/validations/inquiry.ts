@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COUNTRIES, validatePostalCodeForCountry } from "@/utils/countries";
 
 export const SAMPLE_GRADES = [
   "4 Suta",
@@ -61,6 +62,55 @@ const mandatoryLeadFields = {
   formStartedAt: z.number().optional(),
 };
 
+export const shippingAddressSchema = z
+  .object({
+    addressLine1: z
+      .string()
+      .trim()
+      .min(3, "Address Line 1 is required (building, street, or primary address).")
+      .max(200, "Address Line 1 must be 200 characters or fewer."),
+    addressLine2: z
+      .string()
+      .trim()
+      .max(200, "Address Line 2 must be 200 characters or fewer.")
+      .optional()
+      .default(""),
+    city: z
+      .string()
+      .trim()
+      .min(2, "City is required.")
+      .max(100, "City must be 100 characters or fewer."),
+    state: z
+      .string()
+      .trim()
+      .min(2, "State / Province / Region is required.")
+      .max(100, "State / Province / Region must be 100 characters or fewer."),
+    postalCode: z
+      .string()
+      .trim()
+      .min(2, "Postal Code / PIN Code is required.")
+      .max(16, "Postal Code / PIN Code must be 16 characters or fewer."),
+    country: z
+      .string()
+      .trim()
+      .min(2, "Please select a country.")
+      .refine((val) => (COUNTRIES as readonly string[]).includes(val), {
+        message: "Please select a valid country from the list.",
+      }),
+  })
+  .superRefine((addr, ctx) => {
+    const check = validatePostalCodeForCountry(addr.postalCode, addr.country);
+    if (!check.valid) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["postalCode"],
+        message: check.message || "Please enter a valid postal / PIN code.",
+      });
+    }
+  });
+
+export type ShippingAddress = z.infer<typeof shippingAddressSchema>;
+
 export const entryLeadSchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("entry_lead"),
@@ -87,6 +137,7 @@ export const sampleRequestSchema = z.object({
   productType: z.enum(SAMPLE_PRODUCT_TYPES, {
     message: "Please select a product type (Regular or Handpicked).",
   }),
+  shippingAddress: shippingAddressSchema,
   details: z
     .string()
     .trim()

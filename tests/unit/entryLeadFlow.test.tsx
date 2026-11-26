@@ -90,13 +90,29 @@ describe("Entry Welcome Modal & Gated Sample Flow (Visitors A, B, C)", () => {
       expect(screen.getByText(/Priya Nair · Lotus Exports/i)).toBeInTheDocument();
     });
 
-    // Select Desired Makhana Grade and Product Type before submitting
+    // Select Desired Makhana Grade, Product Type, and Shipping Address before submitting
     const dialog = screen.getByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText(/Desired Makhana Grade/i), {
       target: { value: "5+ Suta" },
     });
     fireEvent.change(within(dialog).getByLabelText(/Product Type/i), {
       target: { value: "Handpicked" },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Address Line 1/i), {
+      target: { value: "Plot 14, Industrial Area" },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/^City/i), {
+      target: { value: "Purnea" },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/State \/ Province \/ Region/i), {
+      target: { value: "Bihar" },
+    });
+    const countryInput = within(dialog).getByLabelText(/^Country/i);
+    fireEvent.focus(countryInput);
+    fireEvent.change(countryInput, { target: { value: "India" } });
+    fireEvent.mouseDown(within(dialog).getByRole("option", { name: "India" }));
+    fireEvent.change(within(dialog).getByLabelText(/Postal Code \/ PIN Code/i), {
+      target: { value: "854301" },
     });
     fireEvent.click(within(dialog).getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
 

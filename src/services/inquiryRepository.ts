@@ -1,9 +1,19 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+export interface ShippingAddressRecord {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
 export interface SampleDetailsRecord {
   desiredGrade: string;
   productType: string;
+  shippingAddress: ShippingAddressRecord;
   additionalRequirements: string;
 }
 
@@ -61,11 +71,6 @@ async function writeLocalLeads(leads: StoredLead[]): Promise<void> {
   await writeFile(/*turbopackIgnore: true*/ filePath, content, "utf8");
 }
 
-/**
- * Upserts a structured business lead by leadId or normalized email so repeat actions
- * (e.g. initial welcome form followed later by Request a Sample) enrich the existing
- * lead record instead of creating duplicates.
- */
 export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOutcome> {
   const webhookUrl = process.env.INQUIRY_WEBHOOK_URL;
   if (webhookUrl) {
@@ -172,6 +177,12 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     "Requested Sample",
     "Desired Grade",
     "Product Type",
+    "Address Line 1",
+    "Address Line 2",
+    "City",
+    "State / Province",
+    "Postal / PIN Code",
+    "Country",
     "Additional Message",
     "First Visit",
     "Latest Visit",
@@ -190,6 +201,12 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     lead.requestedSample,
     lead.sampleDetails?.desiredGrade ?? "",
     lead.sampleDetails?.productType ?? "",
+    lead.sampleDetails?.shippingAddress?.addressLine1 ?? "",
+    lead.sampleDetails?.shippingAddress?.addressLine2 ?? "",
+    lead.sampleDetails?.shippingAddress?.city ?? "",
+    lead.sampleDetails?.shippingAddress?.state ?? "",
+    lead.sampleDetails?.shippingAddress?.postalCode ?? "",
+    lead.sampleDetails?.shippingAddress?.country ?? "",
     lead.sampleDetails?.additionalRequirements || lead.additionalMessage,
     lead.firstVisitAt,
     lead.latestVisitAt,

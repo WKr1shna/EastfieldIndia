@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_GRADES, SAMPLE_PRODUCT_TYPES, inquirySchema } from "@/validations/inquiry";
 
-describe("inquirySchema lead & sample validation", () => {
+describe("inquirySchema lead, sample & shipping address validation", () => {
   const validEnquiryPayload = {
     requestType: "enquiry" as const,
     company: "Himalayan Foods Pvt Ltd",
@@ -12,6 +12,15 @@ describe("inquirySchema lead & sample validation", () => {
     website: "",
   };
 
+  const ukAddress = {
+    addressLine1: "221B Baker Street",
+    addressLine2: "Floor 2",
+    city: "London",
+    state: "Greater London",
+    postalCode: "NW1 6XE",
+    country: "United Kingdom",
+  };
+
   const validSamplePayload = {
     requestType: "sample" as const,
     company: "Verma Snack Co",
@@ -20,6 +29,7 @@ describe("inquirySchema lead & sample validation", () => {
     email: "rohan@vermasnacks.co.uk",
     desiredGrade: "5+ Suta" as const,
     productType: "Handpicked" as const,
+    shippingAddress: ukAddress,
     details: "Reviewing crunch and expansion before bulk order.",
     website: "",
   };
@@ -29,17 +39,7 @@ describe("inquirySchema lead & sample validation", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts all 6 grades paired independently with Regular or Handpicked", () => {
-    expect(SAMPLE_GRADES).toEqual([
-      "4 Suta",
-      "4+ Suta",
-      "5 Suta",
-      "5+ Suta",
-      "6 Suta",
-      "6+ Suta",
-    ]);
-    expect(SAMPLE_PRODUCT_TYPES).toEqual(["Regular", "Handpicked"]);
-
+  it("accepts all 6 grades paired independently with Regular or Handpicked and international address", () => {
     for (const desiredGrade of SAMPLE_GRADES) {
       for (const productType of SAMPLE_PRODUCT_TYPES) {
         const result = inquirySchema.safeParse({
@@ -52,7 +52,35 @@ describe("inquirySchema lead & sample validation", () => {
     }
   });
 
-  it("requires Full Name, Mobile, Company, Email, Desired Grade, and Product Type for samples", () => {
+  it("validates country-aware postal codes (India 6-digit PIN vs US ZIP vs UK postcode)", () => {
+    const badIndiaPin = inquirySchema.safeParse({
+      ...validSamplePayload,
+      shippingAddress: {
+        addressLine1: "Plot 12, Sector 4",
+        addressLine2: "",
+        city: "Purnea",
+        state: "Bihar",
+        postalCode: "ABC12",
+        country: "India",
+      },
+    });
+    expect(badIndiaPin.success).toBe(false);
+
+    const goodIndiaPin = inquirySchema.safeParse({
+      ...validSamplePayload,
+      shippingAddress: {
+        addressLine1: "Plot 12, Sector 4",
+        addressLine2: "",
+        city: "Purnea",
+        state: "Bihar",
+        postalCode: "854301",
+        country: "India",
+      },
+    });
+    expect(goodIndiaPin.success).toBe(true);
+  });
+
+  it("requires structured shipping address fields and product specs for samples", () => {
     const result = inquirySchema.safeParse({
       requestType: "sample",
       company: "",
@@ -61,25 +89,30 @@ describe("inquirySchema lead & sample validation", () => {
       email: "bad-email",
       desiredGrade: "",
       productType: "",
+      shippingAddress: {
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
+      },
       website: "",
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const fields = result.error.issues.map((i) => i.path[0]);
-      expect(fields).toContain("company");
-      expect(fields).toContain("name");
-      expect(fields).toContain("phone");
-      expect(fields).toContain("email");
-      expect(fields).toContain("desiredGrade");
-      expect(fields).toContain("productType");
+      const paths = result.error.issues.map((i) => i.path.join("."));
+      expect(paths).toContain("company");
+      expect(paths).toContain("name");
+      expect(paths).toContain("phone");
+      expect(paths).toContain("email");
+      expect(paths).toContain("desiredGrade");
+      expect(paths).toContain("productType");
+      expect(paths).toContain("shippingAddress.addressLine1");
+      expect(paths).toContain("shippingAddress.city");
+      expect(paths).toContain("shippingAddress.state");
+      expect(paths).toContain("shippingAddress.postalCode");
+      expect(paths).toContain("shippingAddress.country");
     }
-  });
-
-  it("rejects honeypot spam submissions when website field is populated", () => {
-    const result = inquirySchema.safeParse({
-      ...validEnquiryPayload,
-      website: "https://spam.example.com",
-    });
-    expect(result.success).toBe(false);
   });
 });

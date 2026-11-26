@@ -61,6 +61,14 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
         email: "sourcing@alpennaturkost.de",
         desiredGrade: "5+ Suta",
         productType: "Handpicked",
+        shippingAddress: {
+          addressLine1: "Speicherstadt 14",
+          addressLine2: "Kontor 3",
+          city: "Hamburg",
+          state: "Hamburg",
+          postalCode: "20457",
+          country: "Germany",
+        },
         details: "Requesting sample evaluation.",
         website: "",
         formStartedAt: Date.now() - 5000,
@@ -80,8 +88,21 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
     const stored = JSON.parse(lines[0]) as Record<string, unknown>;
     expect(stored.requestedSample).toBe(true);
     expect(stored.submittedDetails).toBe(true);
-    expect((stored.sampleDetails as Record<string, unknown>).desiredGrade).toBe("5+ Suta");
-    expect((stored.sampleDetails as Record<string, unknown>).productType).toBe("Handpicked");
+    const details = stored.sampleDetails as {
+      desiredGrade: string;
+      productType: string;
+      shippingAddress: Record<string, string>;
+    };
+    expect(details.desiredGrade).toBe("5+ Suta");
+    expect(details.productType).toBe("Handpicked");
+    expect(details.shippingAddress).toEqual({
+      addressLine1: "Speicherstadt 14",
+      addressLine2: "Kontor 3",
+      city: "Hamburg",
+      state: "Hamburg",
+      postalCode: "20457",
+      country: "Germany",
+    });
   });
 
   it("protects admin leads endpoint with Bearer auth and supports CSV export + filtering", async () => {

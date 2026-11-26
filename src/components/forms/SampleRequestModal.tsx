@@ -11,6 +11,7 @@ import {
 } from "@/validations/inquiry";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
+import { CountryCombobox } from "@/components/ui/CountryCombobox";
 
 export function SampleRequestModal() {
   const {
@@ -29,6 +30,15 @@ export function SampleRequestModal() {
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [productType, setProductType] = useState<SampleProductTypeOption | "">("");
+
+  // Structured shipping address fields
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [stateRegion, setStateRegion] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("");
+
   const [details, setDetails] = useState("");
   const [website, setWebsite] = useState("");
   const [editingSaved, setEditingSaved] = useState(false);
@@ -40,6 +50,7 @@ export function SampleRequestModal() {
   const [submittedSummary, setSubmittedSummary] = useState<{
     grade: string;
     productType: string;
+    address: string;
   } | null>(null);
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
@@ -110,6 +121,14 @@ export function SampleRequestModal() {
       skippedInitial: visitorState.skippedInitial,
       desiredGrade: selectedGrade,
       productType,
+      shippingAddress: {
+        addressLine1,
+        addressLine2,
+        city,
+        state: stateRegion,
+        postalCode,
+        country,
+      },
       details,
       website,
       formStartedAt,
@@ -119,7 +138,7 @@ export function SampleRequestModal() {
     if (!parsed.success) {
       const nextErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? "form");
+        const key = issue.path.length > 0 ? issue.path.join(".") : "form";
         if (!nextErrors[key]) {
           nextErrors[key] = issue.message;
         }
@@ -129,7 +148,7 @@ export function SampleRequestModal() {
         setEditingSaved(true);
       }
       setStatus("error");
-      setServerMessage("Please complete the highlighted required sample and contact fields.");
+      setServerMessage("Please complete the highlighted required fields before submitting.");
       return;
     }
 
@@ -165,9 +184,21 @@ export function SampleRequestModal() {
         company,
         email,
       });
+
+      const formattedAddress = [
+        addressLine1,
+        addressLine2,
+        city,
+        `${stateRegion} ${postalCode}`.trim(),
+        country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
       setSubmittedSummary({
         grade: selectedGrade,
         productType,
+        address: formattedAddress,
       });
       setStatus("success");
       setReferenceId(data.referenceId || "");
@@ -186,9 +217,11 @@ export function SampleRequestModal() {
   const inputClass =
     "mt-1.5 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/60 focus:border-forest-800 focus:outline-none focus:ring-2 focus:ring-gold-500/40";
 
+  const hasAddressPreview = Boolean(addressLine1 || city || stateRegion || postalCode || country);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-forest-950/75 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-forest-950/75 p-3 sm:p-4 backdrop-blur-xs"
       role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeSampleModal();
@@ -201,7 +234,7 @@ export function SampleRequestModal() {
         className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gold-500/35 bg-ivory-100 text-ink-900 shadow-2xl"
       >
         {/* Modal Header */}
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-forest-900 px-6 py-5 text-ivory-100">
+        <div className="sticky top-0 z-20 flex items-start justify-between gap-4 border-b border-white/10 bg-forest-900 px-6 py-5 text-ivory-100">
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] text-gold-400 uppercase">
               <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -222,7 +255,7 @@ export function SampleRequestModal() {
           </button>
         </div>
 
-        <div className="p-6 sm:p-7">
+        <div className="p-5 sm:p-7">
           {status === "success" ? (
             <div
               role="status"
@@ -241,10 +274,14 @@ export function SampleRequestModal() {
                 </p>
               )}
               {submittedSummary && (
-                <div className="mx-auto mt-4 max-w-xs rounded-xl border border-ivory-300 bg-ivory-50 px-4 py-3 text-left text-xs text-forest-900">
+                <div className="mx-auto mt-4 max-w-md rounded-xl border border-ivory-300 bg-ivory-50 px-4 py-3 text-left text-xs text-forest-900">
                   <p className="font-bold tracking-wider text-gold-600 uppercase">Sample Requested</p>
                   <p className="mt-1">Grade: {submittedSummary.grade}</p>
                   <p className="mt-0.5">Product Type: {submittedSummary.productType}</p>
+                  <p className="mt-1.5 text-ink-600">
+                    <span className="font-semibold text-forest-900">Shipping To: </span>
+                    {submittedSummary.address}
+                  </p>
                 </div>
               )}
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-600">
@@ -300,11 +337,11 @@ export function SampleRequestModal() {
                 </div>
               )}
 
-              {/* Previously Collected Business Details */}
+              {/* 1. Customer Details */}
               <div className="rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
-                    Your Business Details
+                    Customer Details
                   </p>
                   {!editingSaved && (
                     <button
@@ -448,10 +485,10 @@ export function SampleRequestModal() {
                 )}
               </div>
 
-              {/* Sample Specification: Desired Makhana Grade + Product Type */}
+              {/* 2. Product Specification */}
               <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
-                  Sample Specification
+                  Product Specification
                 </p>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -520,29 +557,220 @@ export function SampleRequestModal() {
                       <p className="mt-1 text-xs text-red-700">{fieldErrors.productType}</p>
                     )}
                   </div>
+                </div>
+              </div>
 
+              {/* 3. Structured Shipping Details */}
+              <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
+                <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
+                  Shipping Details
+                </p>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  {/* Address Line 1 */}
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="sample-details"
+                      htmlFor="shipping-address-line-1"
                       className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                     >
-                      Additional Requirements{" "}
+                      Address Line 1 <span className="text-red-700">*</span>
+                    </label>
+                    <input
+                      id="shipping-address-line-1"
+                      name="addressLine1"
+                      type="text"
+                      required
+                      autoComplete="address-line1"
+                      value={addressLine1}
+                      onChange={(e) => {
+                        setAddressLine1(e.target.value);
+                        clearFieldError("shippingAddress.addressLine1");
+                      }}
+                      aria-invalid={Boolean(fieldErrors["shippingAddress.addressLine1"])}
+                      placeholder="House/building number, street, or primary address"
+                      className={`${inputClass} ${
+                        fieldErrors["shippingAddress.addressLine1"]
+                          ? "border-red-500"
+                          : "border-ivory-300"
+                      }`}
+                    />
+                    {fieldErrors["shippingAddress.addressLine1"] && (
+                      <p className="mt-1 text-xs text-red-700">
+                        {fieldErrors["shippingAddress.addressLine1"]}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Address Line 2 */}
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="shipping-address-line-2"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      Address Line 2{" "}
                       <span className="font-normal text-ink-500">(Optional)</span>
                     </label>
-                    <textarea
-                      id="sample-details"
-                      name="details"
-                      rows={2}
-                      value={details}
-                      onChange={(e) => setDetails(e.target.value)}
-                      placeholder="Quantity/sample pack preference, shipping destination, or quality notes..."
+                    <input
+                      id="shipping-address-line-2"
+                      name="addressLine2"
+                      type="text"
+                      autoComplete="address-line2"
+                      value={addressLine2}
+                      onChange={(e) => setAddressLine2(e.target.value)}
+                      placeholder="Apartment, suite, floor, landmark, or locality"
                       className={`${inputClass} border-ivory-300`}
                     />
                   </div>
-                </div>
 
-                {/* Live Selection Summary */}
-                {(selectedGrade || productType) && (
+                  {/* City */}
+                  <div>
+                    <label
+                      htmlFor="shipping-city"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      City <span className="text-red-700">*</span>
+                    </label>
+                    <input
+                      id="shipping-city"
+                      name="city"
+                      type="text"
+                      required
+                      autoComplete="address-level2"
+                      value={city}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        clearFieldError("shippingAddress.city");
+                      }}
+                      aria-invalid={Boolean(fieldErrors["shippingAddress.city"])}
+                      placeholder="City"
+                      className={`${inputClass} ${
+                        fieldErrors["shippingAddress.city"] ? "border-red-500" : "border-ivory-300"
+                      }`}
+                    />
+                    {fieldErrors["shippingAddress.city"] && (
+                      <p className="mt-1 text-xs text-red-700">
+                        {fieldErrors["shippingAddress.city"]}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* State / Province / Region */}
+                  <div>
+                    <label
+                      htmlFor="shipping-state"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      State / Province / Region <span className="text-red-700">*</span>
+                    </label>
+                    <input
+                      id="shipping-state"
+                      name="state"
+                      type="text"
+                      required
+                      autoComplete="address-level1"
+                      value={stateRegion}
+                      onChange={(e) => {
+                        setStateRegion(e.target.value);
+                        clearFieldError("shippingAddress.state");
+                      }}
+                      aria-invalid={Boolean(fieldErrors["shippingAddress.state"])}
+                      placeholder="State, province, or region"
+                      className={`${inputClass} ${
+                        fieldErrors["shippingAddress.state"] ? "border-red-500" : "border-ivory-300"
+                      }`}
+                    />
+                    {fieldErrors["shippingAddress.state"] && (
+                      <p className="mt-1 text-xs text-red-700">
+                        {fieldErrors["shippingAddress.state"]}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Postal Code / PIN Code */}
+                  <div>
+                    <label
+                      htmlFor="shipping-postal-code"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      Postal Code / PIN Code <span className="text-red-700">*</span>
+                    </label>
+                    <input
+                      id="shipping-postal-code"
+                      name="postalCode"
+                      type="text"
+                      required
+                      autoComplete="postal-code"
+                      inputMode={country === "India" ? "numeric" : "text"}
+                      value={postalCode}
+                      onChange={(e) => {
+                        setPostalCode(e.target.value);
+                        clearFieldError("shippingAddress.postalCode");
+                      }}
+                      aria-invalid={Boolean(fieldErrors["shippingAddress.postalCode"])}
+                      placeholder={country === "India" ? "e.g., 854301" : "Postal / ZIP / PIN code"}
+                      className={`${inputClass} ${
+                        fieldErrors["shippingAddress.postalCode"]
+                          ? "border-red-500"
+                          : "border-ivory-300"
+                      }`}
+                    />
+                    {fieldErrors["shippingAddress.postalCode"] && (
+                      <p className="mt-1 text-xs text-red-700">
+                        {fieldErrors["shippingAddress.postalCode"]}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Country (Searchable Dropdown) */}
+                  <div>
+                    <label
+                      htmlFor="shipping-country"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      Country <span className="text-red-700">*</span>
+                    </label>
+                    <CountryCombobox
+                      id="shipping-country"
+                      value={country}
+                      hasError={Boolean(fieldErrors["shippingAddress.country"])}
+                      errorId={
+                        fieldErrors["shippingAddress.country"] ? "err-shipping-country" : undefined
+                      }
+                      onChange={(nextCountry) => {
+                        setCountry(nextCountry);
+                        clearFieldError("shippingAddress.country");
+                        clearFieldError("shippingAddress.postalCode");
+                      }}
+                    />
+                    {fieldErrors["shippingAddress.country"] && (
+                      <p id="err-shipping-country" className="mt-1 text-xs text-red-700">
+                        {fieldErrors["shippingAddress.country"]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Additional Information + Pre-Submission Summary */}
+              <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
+                <label
+                  htmlFor="sample-details"
+                  className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                >
+                  Additional Requirements{" "}
+                  <span className="font-normal text-ink-500">(Optional)</span>
+                </label>
+                <textarea
+                  id="sample-details"
+                  name="details"
+                  rows={2}
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder="Sample pack weight preference, intended application, or quality notes..."
+                  className={`${inputClass} border-ivory-300`}
+                />
+
+                {(selectedGrade || productType || hasAddressPreview) && (
                   <div
                     aria-label="Sample selection summary"
                     className="mt-4 rounded-xl border border-gold-500/35 bg-ivory-50 px-4 py-3 text-xs text-forest-900"
@@ -553,6 +781,20 @@ export function SampleRequestModal() {
                     <ul className="mt-1.5 space-y-0.5 font-medium">
                       <li>Grade: {selectedGrade || "Not selected yet"}</li>
                       <li>Product Type: {productType || "Not selected yet"}</li>
+                      {hasAddressPreview && (
+                        <li className="text-ink-700">
+                          Ship To:{" "}
+                          {[
+                            addressLine1,
+                            addressLine2,
+                            city,
+                            `${stateRegion} ${postalCode}`.trim(),
+                            country,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </li>
+                      )}
                     </ul>
                   </div>
                 )}

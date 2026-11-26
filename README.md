@@ -68,6 +68,7 @@ cp .env.example .env.local
 - **Resend Email**: Set `RESEND_API_KEY`, `INQUIRY_TO_EMAIL`, and `INQUIRY_FROM_EMAIL` to automatically dispatch structured HTML business enquiries and sample requests to your sourcing desk.
 - **Database / Webhook Persistence**: `sql/schema.sql` provides the indexed PostgreSQL/Supabase schema (`business_leads`) supporting deduplicated lead capture across entry lead popups, general enquiries, and sample requests. Set `INQUIRY_WEBHOOK_URL` (and optional `INQUIRY_WEBHOOK_SECRET`) to forward leads directly to your database API/CRM, or use the built-in non-blocking NDJSON upsert fallback (`INQUIRY_STORAGE_PATH` / `.data/leads.ndjson`).
 - **Admin Lead Export API**: Set `ADMIN_API_KEY` (minimum 16 characters) to enable authenticated access to `GET /api/admin/leads` (`Authorization: Bearer <ADMIN_API_KEY>`), supporting `?format=csv`, `?requestedSample=true|false`, and `?dateFrom=...&dateTo=...` filters.
+- **Address Autocomplete & Structured Shipping**: Uses semantic HTML5 `autoComplete` tokens (`address-line1`, `address-line2`, `address-level2`, `address-level1`, `postal-code`, `country-name`) with a searchable international country selector and country-aware postal code validation, requiring zero external paid API keys while allowing manual editing of every field.
 - **Distributed Rate Limiting**: Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` when deploying across multiple serverless/container instances.
 
 ## Scripts
