@@ -2,10 +2,20 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, WheatOff } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Dna,
+  Layers,
+  Scale,
+  ShieldCheck,
+  Sparkles,
+  WheatOff,
+} from "lucide-react";
 import {
   CULINARY_APPLICATIONS,
   NUTRITION_ACCURACY_NOTE,
+  NUTRITIONAL_HIGHLIGHTS,
   NUTRITIONAL_PROFILE_PILLARS,
   POSTER_BANNER_BENEFIT,
   POSTER_LEFT_BENEFITS,
@@ -15,6 +25,8 @@ import {
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
+
+const HIGHLIGHT_ICONS = [Dna, Sparkles, ShieldCheck, Layers, Scale] as const;
 
 export function WhyMakhanaSection() {
   const [selectedBenefit, setSelectedBenefit] = useState<PosterBenefit>(POSTER_BANNER_BENEFIT);
@@ -28,7 +40,7 @@ export function WhyMakhanaSection() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Poster Container: Warm Cream with Muted Gold Framing */}
         <Reveal>
-          <div className="relative overflow-hidden rounded-3xl border border-gold-500/45 bg-ivory-50 p-6 shadow-sm sm:p-10 lg:p-14">
+          <div className="relative overflow-hidden rounded-3xl border border-gold-500/45 bg-ivory-50/96 p-6 shadow-xl sm:p-10 lg:p-14">
             {/* Subtle corner gold hairlines */}
             <div
               aria-hidden="true"
@@ -172,8 +184,86 @@ export function WhyMakhanaSection() {
                 </button>
               </div>
 
+              {/* Editorial Nutritional Highlights Showcase (Amino Acids, Histidine, Immunity, EAAI, Low GI) */}
+              <div className="mt-8 overflow-hidden rounded-2xl border border-gold-500/35 bg-forest-900 p-6 text-ivory-100 shadow-lg sm:p-9">
+                <div className="flex flex-col justify-between gap-4 border-b border-white/12 pb-6 lg:flex-row lg:items-end">
+                  <div>
+                    <p className="inline-flex items-center gap-2 text-[11px] font-bold tracking-[0.18em] text-gold-400 uppercase">
+                      <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>Nutritional Highlights · Euryale Ferox Seed Kernel</span>
+                    </p>
+                    <h3 className="mt-2 font-serif text-2xl font-medium text-ivory-50 sm:text-3xl">
+                      Amino Acid Composition &amp; Balanced Nutrition.
+                    </h3>
+                  </div>
+                  <span className="inline-block self-start rounded-full border border-gold-500/40 bg-forest-800 px-3.5 py-1 text-[10px] font-bold tracking-[0.16em] text-gold-400 uppercase lg:self-auto">
+                    {siteConfig.productPromise}
+                  </span>
+                </div>
+
+                {/* 2-Column Editorial Grid with Thin Hairline Separators */}
+                <div className="mt-2 grid grid-cols-1 md:grid-cols-2">
+                  {NUTRITIONAL_HIGHLIGHTS.map((item, idx) => {
+                    const Icon = HIGHLIGHT_ICONS[idx] ?? Dna;
+                    const isLeftCol = idx % 2 === 0;
+                    return (
+                      <article
+                        key={item.id}
+                        className={`flex flex-col justify-between border-b border-white/12 py-6 ${
+                          isLeftCol ? "md:border-r md:pr-8" : "md:pl-8"
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.15em] text-gold-400 uppercase">
+                              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>{item.badge}</span>
+                            </span>
+                            <span className="font-mono text-xs text-ivory-300/60">
+                              {item.number}
+                            </span>
+                          </div>
+
+                          <h4 className="mt-3 text-base font-extrabold tracking-[0.06em] text-ivory-50 uppercase sm:text-lg">
+                            {item.heading}
+                          </h4>
+                          <p className="mt-2 text-sm leading-relaxed text-ivory-200/85">
+                            {item.description}
+                          </p>
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {/* 6th Balanced Visual Cell Pairing with Authentic Close-up Photography */}
+                  <div className="flex flex-col justify-between border-b border-white/12 py-6 md:pl-8">
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl border border-gold-500/35 bg-forest-950">
+                        <Image
+                          src="/images/makhana/makhana-closeup-crunch.jpg"
+                          alt="Popped Bihar makhana kernel close-up texture"
+                          fill
+                          loading="lazy"
+                          sizes="96px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
+                          Whole Seed Integrity
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-ivory-200/90">
+                          Popped directly from Bihar-grown aquatic lotus seeds without frying,
+                          preserving its natural airy crunch and mineral profile.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Compact Nutritional Profile & Versatility Footer inside Poster */}
-              <div className="mt-6 grid gap-4 border-t border-gold-500/25 pt-6 lg:grid-cols-12">
+              <div className="mt-7 grid gap-4 border-t border-gold-500/25 pt-6 lg:grid-cols-12">
                 <div className="lg:col-span-7">
                   <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
                     Plain Makhana Nutritional Profile

@@ -5,16 +5,16 @@ import { InquiryProvider } from "@/components/ui/InquiryContext";
 import { WhyMakhanaSection } from "@/components/sections/WhyMakhanaSection";
 import { HELD_CLIENT_CLAIMS_PENDING_SUBSTANTIATION } from "@/features/products/nutrition";
 
-describe("WhyMakhanaSection poster & compliance", () => {
-  it("renders WHY MAKHANA?, GUILT-FREE. GLUTEN-FREE., and all poster benefit statements", () => {
+describe("WhyMakhanaSection poster, nutritional highlights & compliance", () => {
+  it("renders WHY MAKHANA?, GUILT-FREE. GLUTEN-FREE., all poster statements, and 5 new nutritional highlights", () => {
     render(
-      <InquiryProvider>
+      <InquiryProvider disableAutoEntryPopup>
         <WhyMakhanaSection />
       </InquiryProvider>
     );
 
     expect(screen.getByRole("heading", { name: /WHY MAKHANA\?/i })).toBeInTheDocument();
-    expect(screen.getByText(/GUILT-FREE\. GLUTEN-FREE\./i)).toBeInTheDocument();
+    expect(screen.getAllByText(/GUILT-FREE\. GLUTEN-FREE\./i).length).toBeGreaterThanOrEqual(1);
 
     const expectedStatements = [
       "SUPPORTS HEART HEALTH",
@@ -26,6 +26,11 @@ describe("WhyMakhanaSection poster & compliance", () => {
       "A SATISFYING, CRUNCHY SNACK",
       "NUTRIENT-RICH",
       "TRADITIONAL INDIAN SUPERFOOD",
+      "ESSENTIAL & NON-ESSENTIAL AMINO ACIDS",
+      "HISTIDINE-RICH",
+      "NUTRITION THAT SUPPORTS IMMUNITY",
+      "RICH AMINO ACID PROFILE",
+      "LOW GLYCEMIC INDEX",
     ];
 
     for (const statement of expectedStatements) {
@@ -35,7 +40,7 @@ describe("WhyMakhanaSection poster & compliance", () => {
 
   it("does not publish unsubstantiated medical claims as public facts", () => {
     const { container } = render(
-      <InquiryProvider>
+      <InquiryProvider disableAutoEntryPopup>
         <WhyMakhanaSection />
       </InquiryProvider>
     );
@@ -44,5 +49,7 @@ describe("WhyMakhanaSection poster & compliance", () => {
     for (const withheldClaim of HELD_CLIENT_CLAIMS_PENDING_SUBSTANTIATION) {
       expect(text.toLowerCase()).not.toContain(withheldClaim.toLowerCase());
     }
+    expect(text.toLowerCase()).not.toContain("treats diabetes");
+    expect(text.toLowerCase()).not.toContain("prevents diabetes");
   });
 });

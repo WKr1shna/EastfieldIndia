@@ -5,6 +5,14 @@ export interface PosterBenefit {
   column: "banner" | "left" | "right";
 }
 
+export interface NutritionalHighlightItem {
+  id: string;
+  number: string;
+  heading: string;
+  description: string;
+  badge: string;
+}
+
 export const POSTER_BANNER_BENEFIT: PosterBenefit = {
   id: "heart",
   statement: "SUPPORTS HEART HEALTH",
@@ -72,6 +80,49 @@ export const POSTER_RIGHT_BENEFITS: PosterBenefit[] = [
   },
 ];
 
+export const NUTRITIONAL_HIGHLIGHTS: NutritionalHighlightItem[] = [
+  {
+    id: "amino-acids",
+    number: "01",
+    heading: "ESSENTIAL & NON-ESSENTIAL AMINO ACIDS",
+    description:
+      "Makhana contains a diverse amino acid profile, including both essential and non-essential amino acids, contributing to its plant-based nutritional value.",
+    badge: "Protein Quality",
+  },
+  {
+    id: "histidine-rich",
+    number: "02",
+    heading: "HISTIDINE-RICH",
+    description:
+      "Contains Histidine, an essential amino acid important for growth, tissue maintenance, and normal physiological functions—particularly valued during periods of growth and development.",
+    badge: "Essential Amino Acid",
+  },
+  {
+    id: "immunity-support",
+    number: "03",
+    heading: "NUTRITION THAT SUPPORTS IMMUNITY",
+    description:
+      "Dietary amino acids and naturally occurring micronutrients help support normal immune function as part of a varied, balanced diet.",
+    badge: "Daily Wellness",
+  },
+  {
+    id: "eaai-profile",
+    number: "04",
+    heading: "RICH AMINO ACID PROFILE",
+    description:
+      "Food-science studies of Euryale ferox seed kernels report a balanced amino acid composition and notable essential amino acid index (EAAI) compared with many conventional snack grains.",
+    badge: "EAAI Composition",
+  },
+  {
+    id: "low-gi",
+    number: "05",
+    heading: "LOW GLYCEMIC INDEX",
+    description:
+      "Reported in nutritional literature to have a relatively low glycemic index in its plain form, making it a considered option for balanced, mindful snacking.",
+    badge: "Balanced Energy",
+  },
+];
+
 export const NUTRITIONAL_PROFILE_PILLARS = [
   "Carbohydrates",
   "Protein",
@@ -99,7 +150,7 @@ export const CULINARY_APPLICATIONS = [
 ] as const;
 
 export const NUTRITION_ACCURACY_NOTE =
-  "Shown in the context of a balanced diet. Makhana is naturally gluten-free and low in fat in its plain, unprocessed form; gluten-free suitability for finished goods depends on agreed processing and packing controls. Statements describe general nutritional characteristics and are not medical claims.";
+  "Shown in the context of a balanced diet. Makhana is naturally gluten-free and low in fat in its plain, unprocessed form; gluten-free suitability for finished goods depends on agreed processing and packing controls. Statements reflect general properties reported in published literature on makhana seed kernels and are not medical claims.";
 
 /**
  * Internal compliance register: Client-provided traditional/marketing claims
