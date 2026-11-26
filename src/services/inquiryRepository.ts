@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import { getMongoLeadsCollection, isMongoConfigured } from "@/services/mongodb";
 
 export interface ShippingAddressRecord {
   addressLine1: string;
@@ -41,7 +42,7 @@ export interface StorageOutcome {
   persisted: boolean;
   deduplicated: boolean;
   lead: StoredLead;
-  channel: "webhook" | "file" | "ephemeral";
+  channel: "mongodb" | "webhook" | "file" | "ephemeral";
 }
 
 function getStoragePath(): string {
@@ -49,6 +50,30 @@ function getStoragePath(): string {
     return process.env.INQUIRY_STORAGE_PATH;
   }
   return path.join(process.cwd(), ".data", "leads.ndjson");
+}
+
+function mergeLeadRecord(prev: StoredLead, incoming: StoredLead): StoredLead {
+  return {
+    ...prev,
+    visitorId: incoming.visitorId || prev.visitorId,
+    name: incoming.name || prev.name,
+    phone: incoming.phone || prev.phone,
+    company: incoming.company || prev.company,
+    latestVisitAt: incoming.latestVisitAt || incoming.updatedAt,
+    skippedInitial: prev.skippedInitial || incoming.skippedInitial,
+    submittedDetails: prev.submittedDetails || incoming.submittedDetails,
+    requestedSample: prev.requestedSample || incoming.requestedSample,
+    sampleDetails: incoming.sampleDetails ?? prev.sampleDetails,
+    additionalMessage: incoming.additionalMessage || prev.additionalMessage,
+    updatedAt: incoming.updatedAt,
+    sourceIpHash: incoming.sourceIpHash,
+  };
+}
+
+function stripMongoId(doc: StoredLead & { _id?: unknown }): StoredLead {
+  const { _id, ...rest } = doc;
+  void _id;
+  return rest;
 }
 
 async function readLocalLeads(): Promise<StoredLead[]> {
@@ -71,32 +96,68 @@ async function writeLocalLeads(leads: StoredLead[]): Promise<void> {
   await writeFile(/*turbopackIgnore: true*/ filePath, content, "utf8");
 }
 
-export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOutcome> {
+async function forwardWebhook(lead: StoredLead): Promise<boolean> {
   const webhookUrl = process.env.INQUIRY_WEBHOOK_URL;
-  if (webhookUrl) {
+  if (!webhookUrl) return false;
+  try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (process.env.INQUIRY_WEBHOOK_SECRET) {
+      headers["X-EastField-Signature"] = process.env.INQUIRY_WEBHOOK_SECRET;
+    }
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(lead),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOutcome> {
+  const normalizedEmail = incoming.email.toLowerCase();
+
+  // 1. Primary durable database: MongoDB Atlas (when MONGODB_URI is configured)
+  if (isMongoConfigured()) {
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (process.env.INQUIRY_WEBHOOK_SECRET) {
-        headers["X-EastField-Signature"] = process.env.INQUIRY_WEBHOOK_SECRET;
-      }
-      const res = await fetch(webhookUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(incoming),
-      });
-      if (res.ok) {
-        return { persisted: true, deduplicated: false, lead: incoming, channel: "webhook" };
+      const collection = await getMongoLeadsCollection();
+      if (collection) {
+        const existing = await collection.findOne({
+          $or: [...(incoming.id ? [{ id: incoming.id }] : []), { email: normalizedEmail }],
+        });
+
+        let savedLead = { ...incoming, email: normalizedEmail };
+        let deduplicated = false;
+
+        if (existing) {
+          deduplicated = true;
+          savedLead = mergeLeadRecord(stripMongoId(existing), savedLead);
+          await collection.updateOne({ id: existing.id }, { $set: savedLead });
+        } else {
+          await collection.insertOne({ ...savedLead });
+        }
+
+        // Non-blocking optional CRM/Slack webhook forward if also configured
+        await forwardWebhook(savedLead);
+
+        return { persisted: true, deduplicated, lead: savedLead, channel: "mongodb" };
       }
     } catch {
-      // Fall through to local persistence
+      // Fall through to secondary storage channels if MongoDB is temporarily unreachable
     }
   }
 
+  // 2. Webhook-only fallback when configured without MongoDB
+  if (await forwardWebhook(incoming)) {
+    return { persisted: true, deduplicated: false, lead: incoming, channel: "webhook" };
+  }
+
+  // 3. Local NDJSON file storage fallback
   try {
     const existing = await readLocalLeads();
-    const normalizedEmail = incoming.email.toLowerCase();
     const matchIndex = existing.findIndex(
       (item) =>
         (incoming.id && item.id === incoming.id) ||
@@ -108,22 +169,7 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
 
     if (matchIndex !== -1) {
       deduplicated = true;
-      const prev = existing[matchIndex];
-      savedLead = {
-        ...prev,
-        visitorId: incoming.visitorId || prev.visitorId,
-        name: incoming.name || prev.name,
-        phone: incoming.phone || prev.phone,
-        company: incoming.company || prev.company,
-        latestVisitAt: incoming.latestVisitAt || incoming.updatedAt,
-        skippedInitial: prev.skippedInitial || incoming.skippedInitial,
-        submittedDetails: prev.submittedDetails || incoming.submittedDetails,
-        requestedSample: prev.requestedSample || incoming.requestedSample,
-        sampleDetails: incoming.sampleDetails ?? prev.sampleDetails,
-        additionalMessage: incoming.additionalMessage || prev.additionalMessage,
-        updatedAt: incoming.updatedAt,
-        sourceIpHash: incoming.sourceIpHash,
-      };
+      savedLead = mergeLeadRecord(existing[matchIndex], incoming);
       existing[matchIndex] = savedLead;
     } else {
       existing.push(savedLead);
@@ -143,6 +189,28 @@ export interface LeadQueryFilters {
 }
 
 export async function queryLeadRecords(filters: LeadQueryFilters = {}): Promise<StoredLead[]> {
+  if (isMongoConfigured()) {
+    try {
+      const collection = await getMongoLeadsCollection();
+      if (collection) {
+        const query: Record<string, unknown> = {};
+        if (filters.requestedSample === "true") query.requestedSample = true;
+        if (filters.requestedSample === "false") query.requestedSample = false;
+        if (filters.dateFrom || filters.dateTo) {
+          const submittedAtRange: Record<string, string> = {};
+          if (filters.dateFrom) submittedAtRange.$gte = filters.dateFrom;
+          if (filters.dateTo) submittedAtRange.$lte = filters.dateTo;
+          query.submittedAt = submittedAtRange;
+        }
+
+        const docs = await collection.find(query).sort({ submittedAt: -1 }).toArray();
+        return docs.map(stripMongoId);
+      }
+    } catch {
+      // Fall through to local file query
+    }
+  }
+
   const leads = await readLocalLeads();
 
   return leads

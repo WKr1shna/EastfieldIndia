@@ -20,14 +20,22 @@ function createRequest(body: unknown, ip = "203.0.113.10") {
 }
 
 describe("POST /api/inquiries & GET /api/admin/leads", () => {
+  const originalMongoUri = process.env.MONGODB_URI;
+
   beforeEach(() => {
     clearLocalRateLimitBuckets();
+    delete process.env.MONGODB_URI;
     process.env.INQUIRY_STORAGE_PATH = TEST_STORAGE_PATH;
     process.env.RATE_LIMIT_MAX_REQUESTS = "5";
     process.env.ADMIN_API_KEY = "test-admin-secret-key-min-16-chars";
   });
 
   afterEach(async () => {
+    if (originalMongoUri !== undefined) {
+      process.env.MONGODB_URI = originalMongoUri;
+    } else {
+      delete process.env.MONGODB_URI;
+    }
     delete process.env.INQUIRY_STORAGE_PATH;
     delete process.env.RATE_LIMIT_MAX_REQUESTS;
     delete process.env.ADMIN_API_KEY;
