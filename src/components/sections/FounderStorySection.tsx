@@ -41,48 +41,35 @@ export function FounderStorySection() {
           </Reveal>
 
           <div className="relative mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14">
-            {/* Editorial Sidebar: Authentic Bihar Origin Visual & Founder Card */}
+            {/* Editorial Sidebar: Founder Portrait & Details */}
             <div className="lg:col-span-4">
               <Reveal delayMs={80}>
                 <aside className="overflow-hidden rounded-2xl border border-forest-800/15 bg-forest-900 text-ivory-100 shadow-lg">
-                  {/* Authentic Bihar Heritage Visual (No invented founder portrait) */}
-                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-white/10">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-white/10 bg-forest-950">
                     <Image
-                      src="/images/sourcing/bihar-lotus-wetland.jpg"
-                      alt="Morning mist over Bihar's traditional makhana wetlands"
+                      src="/images/founder/surya-alok.jpg"
+                      alt="Surya Alok, Founder of EastField India"
                       fill
                       loading="lazy"
                       sizes="(max-width: 1024px) 100vw, 33vw"
-                      className="object-cover"
+                      className="object-cover object-[50%_20%]"
                     />
                     <div
                       aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/20 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/15 to-transparent"
                     />
-                    <p className="absolute bottom-3 left-4 text-[10px] font-semibold tracking-[0.16em] text-gold-400 uppercase">
-                      Bihar Heritage · Origin Roots
-                    </p>
+                    <div className="absolute inset-x-6 bottom-5">
+                      <h3 className="text-xl font-semibold text-ivory-50">
+                        {siteConfig.founder.name}
+                      </h3>
+                      <p className="mt-0.5 text-xs font-medium tracking-wider text-gold-400 uppercase">
+                        {siteConfig.founder.role}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="p-7 sm:p-8">
-                    <div className="flex items-center gap-4">
-                      <div
-                        aria-hidden="true"
-                        className="flex h-13 w-13 shrink-0 items-center justify-center rounded-xl border border-gold-500/45 bg-forest-800 font-serif text-xl font-semibold text-gold-400"
-                      >
-                        SA
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-ivory-50">
-                          {siteConfig.founder.name}
-                        </h3>
-                        <p className="text-xs font-medium tracking-wider text-gold-400 uppercase">
-                          {siteConfig.founder.role}
-                        </p>
-                      </div>
-                    </div>
-
-                    <blockquote className="mt-6 border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-100">
+                    <blockquote className="border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-100">
                       &ldquo;Our roots are Indian. Our vision is global.&rdquo;
                     </blockquote>
 
