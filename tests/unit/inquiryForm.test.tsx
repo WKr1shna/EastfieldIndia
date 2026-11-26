@@ -1,15 +1,19 @@
 import React from "react";
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { InquiryProvider } from "@/components/ui/InquiryContext";
 import { InquiryFormSection } from "@/components/forms/InquiryFormSection";
 
-describe("InquiryFormSection", () => {
+describe("InquiryFormSection (minimal 4-field General Business Enquiry)", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("displays EastField India GSTIN and Request a Sample mode by default", () => {
+  it("displays EastField India GSTIN and minimal 4-field enquiry form", () => {
     render(
       <InquiryProvider>
         <InquiryFormSection />
@@ -17,7 +21,11 @@ describe("InquiryFormSection", () => {
     );
 
     expect(screen.getByText("10BIPPA9997L1ZM")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Request a Sample/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Company Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Mobile Number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Submit Enquiry/i })).toBeInTheDocument();
   });
 
   it("shows validation errors when submitted empty", async () => {
@@ -27,22 +35,21 @@ describe("InquiryFormSection", () => {
       </InquiryProvider>
     );
 
-    const submitBtn = screen.getByRole("button", { name: /Request a Sample/i });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: /Submit Enquiry/i }));
 
     expect(
-      await screen.findByText(/Please complete the highlighted required fields/i)
+      await screen.findByText(/Please complete the highlighted business and contact fields/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/Please enter your full name/i)).toBeInTheDocument();
+    expect(screen.getByText(/Company name is required/i)).toBeInTheDocument();
   });
 
-  it("submits valid Request a Sample submission and renders confirmation reference", async () => {
+  it("submits minimal enquiry, saves session contact, and displays confirmation", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
-        referenceId: "EF-20261126-SMP999",
-        message: "Thank you. Sample availability will be reviewed.",
+        referenceId: "EF-20261127-LEAD01",
+        message: "Thank you. Your business enquiry has been received.",
       }),
     } as Response);
 
@@ -52,35 +59,26 @@ describe("InquiryFormSection", () => {
       </InquiryProvider>
     );
 
-    fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: "Rohan Verma" } });
     fireEvent.change(screen.getByLabelText(/Company Name/i), {
       target: { value: "Verma Foods" },
     });
-    fireEvent.change(screen.getByLabelText(/Business Email/i), {
-      target: { value: "rohan@vermafoods.in" },
+    fireEvent.change(screen.getByLabelText(/Full Name/i), {
+      target: { value: "Rohan Verma" },
     });
-    fireEvent.change(screen.getByLabelText(/Phone Number/i), {
+    fireEvent.change(screen.getByLabelText(/Mobile Number/i), {
       target: { value: "+91 98100 12345" },
     });
-    fireEvent.change(screen.getByLabelText(/^Country/i), { target: { value: "India" } });
-    fireEvent.change(screen.getByLabelText(/Buyer Type/i), { target: { value: "Wholesaler" } });
-    fireEvent.change(screen.getByLabelText(/Product Grade/i), { target: { value: "5 Suta" } });
-    fireEvent.change(screen.getByLabelText(/Sample Requirement/i), {
-      target: { value: "500 g 5 Suta sample pack" },
-    });
-    fireEvent.change(screen.getByLabelText(/Intended Application/i), {
-      target: { value: "Wholesale distribution" },
-    });
-    fireEvent.change(screen.getByLabelText(/Shipping Destination/i), {
-      target: { value: "Delhi" },
+    fireEvent.change(screen.getByLabelText(/Email Address/i), {
+      target: { value: "rohan@vermafoods.in" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Request a Sample/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Submit Enquiry/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Sample Request Received/i)).toBeInTheDocument();
-      expect(screen.getByText(/EF-20261126-SMP999/)).toBeInTheDocument();
+      expect(screen.getByText(/Enquiry Received/i)).toBeInTheDocument();
+      expect(screen.getByText(/EF-20261127-LEAD01/)).toBeInTheDocument();
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(window.sessionStorage.getItem("eastfield_session_contact_v1")).toContain("Verma Foods");
   });
 });

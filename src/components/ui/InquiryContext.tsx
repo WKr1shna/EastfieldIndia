@@ -1,73 +1,63 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useState } from "react";
-import type { BUYER_TYPES, InquiryMode, PRODUCT_GRADES } from "@/validations/inquiry";
+import type { ProductGradeOption } from "@/validations/inquiry";
+import { useSessionContact, type SessionBusinessContact } from "@/hooks/useSessionContact";
 
-export type BuyerTypeOption = (typeof BUYER_TYPES)[number];
-export type GradeOption = (typeof PRODUCT_GRADES)[number];
+export type GradeOption = ProductGradeOption;
 
 interface InquiryPresetState {
-  requestMode: InquiryMode;
-  selectedGrade: GradeOption | "";
-  selectedBuyerType: BuyerTypeOption | "";
-  setRequestMode: (mode: InquiryMode) => void;
-  setSelectedGrade: (grade: GradeOption | "") => void;
-  setSelectedBuyerType: (buyerType: BuyerTypeOption | "") => void;
-  requestWithGrade: (grade: GradeOption, mode?: InquiryMode) => void;
-  requestWithBuyerType: (buyerType: BuyerTypeOption, mode?: InquiryMode) => void;
+  isSampleModalOpen: boolean;
+  selectedGrade: GradeOption;
+  savedContact: SessionBusinessContact;
+  hasSavedContact: boolean;
+  setSelectedGrade: (grade: GradeOption) => void;
+  saveContact: (contact: SessionBusinessContact) => void;
+  clearContact: () => void;
   openSampleRequest: (grade?: GradeOption) => void;
+  closeSampleModal: () => void;
+  scrollToEnquiry: () => void;
 }
 
 const InquiryContext = createContext<InquiryPresetState | null>(null);
 
-function scrollToInquiry() {
-  if (typeof document === "undefined") return;
-  const el = document.getElementById("inquiry");
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
 export function InquiryProvider({ children }: { children: React.ReactNode }) {
-  const [requestMode, setRequestMode] = useState<InquiryMode>("sample");
-  const [selectedGrade, setSelectedGrade] = useState<GradeOption | "">("");
-  const [selectedBuyerType, setSelectedBuyerType] = useState<BuyerTypeOption | "">("");
-
-  const requestWithGrade = useCallback((grade: GradeOption, mode: InquiryMode = "sample") => {
-    setRequestMode(mode);
-    setSelectedGrade(grade);
-    scrollToInquiry();
-  }, []);
-
-  const requestWithBuyerType = useCallback(
-    (buyerType: BuyerTypeOption, mode: InquiryMode = "sample") => {
-      setRequestMode(mode);
-      setSelectedBuyerType(buyerType);
-      scrollToInquiry();
-    },
-    []
-  );
+  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<GradeOption>("Not sure");
+  const { savedContact, hasSavedContact, saveContact, clearContact } = useSessionContact();
 
   const openSampleRequest = useCallback((grade?: GradeOption) => {
-    setRequestMode("sample");
     if (grade) {
       setSelectedGrade(grade);
     }
-    scrollToInquiry();
+    setIsSampleModalOpen(true);
+  }, []);
+
+  const closeSampleModal = useCallback(() => {
+    setIsSampleModalOpen(false);
+  }, []);
+
+  const scrollToEnquiry = useCallback(() => {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById("inquiry");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, []);
 
   return (
     <InquiryContext.Provider
       value={{
-        requestMode,
+        isSampleModalOpen,
         selectedGrade,
-        selectedBuyerType,
-        setRequestMode,
+        savedContact,
+        hasSavedContact,
         setSelectedGrade,
-        setSelectedBuyerType,
-        requestWithGrade,
-        requestWithBuyerType,
+        saveContact,
+        clearContact,
         openSampleRequest,
+        closeSampleModal,
+        scrollToEnquiry,
       }}
     >
       {children}

@@ -10,7 +10,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export function MakhanaGradesSection() {
   const [selectedGrade, setSelectedGrade] = useState<MakhanaGrade>(MAKHANA_GRADES[2]);
-  const { openSampleRequest, requestWithGrade } = useInquiryPreset();
+  const { openSampleRequest, scrollToEnquiry } = useInquiryPreset();
 
   return (
     <section
@@ -183,12 +183,10 @@ export function MakhanaGradesSection() {
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      requestWithGrade(selectedGrade.inquiryValue as GradeOption, "specification")
-                    }
+                    onClick={() => scrollToEnquiry()}
                     className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-forest-800/50 px-5 py-3 text-xs font-semibold tracking-wider text-ivory-100 uppercase transition-colors hover:border-gold-400/60"
                   >
-                    <span>Discuss Bulk Spec</span>
+                    <span>Connect With Us</span>
                   </button>
                 </div>
               </div>

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { inquirySchema } from "@/validations/inquiry";
 import { checkRateLimit } from "@/services/rateLimit";
-import { saveInquiryRecord, type StoredInquiry } from "@/services/inquiryRepository";
+import { saveInquiryRecord, type StoredLead } from "@/services/inquiryRepository";
 import { sendInquiryNotification } from "@/services/emailService";
 
 function getClientIp(req: NextRequest): string {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Too many inquiry submissions from this connection. Please wait a few minutes before trying again.",
+        error: "Too many submissions from this connection. Please wait a few minutes before trying again.",
       },
       {
         status: 429,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Please review the highlighted fields and submit again.",
+        error: "Please review the highlighted required fields and submit again.",
         fieldErrors,
       },
       { status: 422, headers: rateHeaders }
@@ -83,29 +83,25 @@ export async function POST(request: NextRequest) {
     const elapsed = Date.now() - data.formStartedAt;
     if (elapsed >= 0 && elapsed < 1200) {
       return NextResponse.json(
-        { ok: false, error: "Submission rejected. Please take a moment to review your brief." },
+        { ok: false, error: "Submission rejected. Please take a moment to review your details." },
         { status: 400, headers: rateHeaders }
       );
     }
   }
 
-  const record: StoredInquiry = {
+  const isSample = data.requestType === "sample";
+
+  const record: StoredLead = {
     id: `EF-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 6).toUpperCase()}`,
-    requestType: data.requestType,
-    name: sanitizeText(data.name),
     company: sanitizeText(data.company),
-    email: sanitizeText(data.email).toLowerCase(),
+    name: sanitizeText(data.name),
     phone: sanitizeText(data.phone),
-    buyerType: data.buyerType,
-    country: sanitizeText(data.country),
-    grade: data.grade,
+    email: sanitizeText(data.email).toLowerCase(),
+    enquiryType: isSample ? "Request a Sample" : "General Business Enquiry",
+    grade: data.grade || "Not sure",
     sampleRequirement: sanitizeText(data.sampleRequirement || ""),
-    quantity: sanitizeText(data.quantity || ""),
-    application: sanitizeText(data.application),
-    destination: sanitizeText(data.destination),
-    packaging: sanitizeText(data.packaging || ""),
-    quality: sanitizeText(data.quality || ""),
-    details: sanitizeText(data.details || ""),
+    destination: sanitizeText(data.destination || ""),
+    additionalMessage: sanitizeText(data.details || ""),
     submittedAt: new Date().toISOString(),
     sourceIpHash: hashIp(ip),
   };
@@ -115,16 +111,21 @@ export async function POST(request: NextRequest) {
     sendInquiryNotification(record),
   ]);
 
-  const confirmationMessage =
-    record.requestType === "sample"
-      ? "Thank you. Your sample request has been logged. We will review sample availability and coordinate the next steps."
-      : "Thank you. Your sourcing specification has been logged. Our team will review grade availability, sample criteria, and next steps.";
+  const confirmationMessage = isSample
+    ? "Thank you. Your sample request has been received. We will review sample availability and coordinate the next steps."
+    : "Thank you. Your business enquiry has been received. Our team will connect with you shortly.";
 
   return NextResponse.json(
     {
       ok: true,
       referenceId: record.id,
       message: confirmationMessage,
+      lead: {
+        enquiryType: record.enquiryType,
+        company: record.company,
+        grade: record.grade,
+        submittedAt: record.submittedAt,
+      },
       delivery: {
         persisted: storage.persisted,
         emailDispatched: emailResult.sent,

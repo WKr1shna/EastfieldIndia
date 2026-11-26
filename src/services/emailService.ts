@@ -1,4 +1,4 @@
-import type { StoredInquiry } from "@/services/inquiryRepository";
+import type { StoredLead } from "@/services/inquiryRepository";
 
 export interface EmailOutcome {
   sent: boolean;
@@ -14,7 +14,7 @@ function escapeHtml(input: string): string {
     .replace(/'/g, "&#39;");
 }
 
-export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<EmailOutcome> {
+export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOutcome> {
   const apiKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.INQUIRY_TO_EMAIL;
   const fromEmail = process.env.INQUIRY_FROM_EMAIL || "inquiries@eastfieldindia.com";
@@ -23,27 +23,24 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
     return { sent: false, provider: "none" };
   }
 
-  const isSample = inquiry.requestType === "sample";
+  const isSample = lead.enquiryType === "Request a Sample";
 
   const rows: Array<[string, string]> = [
-    ["Reference ID", inquiry.id],
-    ["Request Type", isSample ? "Sample Request" : "B2B Bulk Specification"],
-    ["Full Name", inquiry.name],
-    ["Company", inquiry.company],
-    ["Business Email", inquiry.email],
-    ["Phone", inquiry.phone],
-    ["Buyer Type", inquiry.buyerType],
-    ["Country", inquiry.country],
-    ["Product Grade", inquiry.grade],
+    ["Reference ID", lead.id],
+    ["Enquiry Type", lead.enquiryType],
+    ["Company Name", lead.company],
+    ["Contact Name", lead.name],
+    ["Mobile Number", lead.phone],
+    ["Email Address", lead.email],
     ...(isSample
-      ? ([["Sample Requirement", inquiry.sampleRequirement || "Not specified"]] as Array<[string, string]>)
-      : ([["Quantity Required", inquiry.quantity || "Not specified"]] as Array<[string, string]>)),
-    ["Intended Application", inquiry.application],
-    ["Shipping Destination", inquiry.destination],
-    ["Packaging Requirements", inquiry.packaging || "Not specified"],
-    ["Quality Requirements", inquiry.quality || "Not specified"],
-    ["Additional Requirements", inquiry.details || "None"],
-    ["Submitted At", inquiry.submittedAt],
+      ? ([
+          ["Requested Grade", lead.grade || "Not sure"],
+          ["Sample Requirement", lead.sampleRequirement || "Not specified"],
+          ["Shipping Destination", lead.destination || "Not specified"],
+        ] as Array<[string, string]>)
+      : []),
+    ["Additional Message", lead.additionalMessage || "None"],
+    ["Submitted At", lead.submittedAt],
   ];
 
   const htmlRows = rows
@@ -57,19 +54,16 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
     )
     .join("");
 
-  const headingDetail = isSample ? inquiry.sampleRequirement : inquiry.quantity;
-  const tag = isSample ? "Sample Request" : "B2B Requirement Brief";
-
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;background:#F5F1E5;padding:24px;">
       <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #ded6c1;border-radius:10px;overflow:hidden;">
         <div style="background:#0B3027;color:#F5F1E5;padding:20px 24px;">
           <div style="font-size:12px;letter-spacing:0.14em;color:#C6A45C;text-transform:uppercase;">EastField India · ${escapeHtml(
-            tag
+            lead.enquiryType
           )}</div>
           <h1 style="margin:6px 0 0;font-size:20px;font-weight:600;">${escapeHtml(
-            inquiry.grade
-          )} — ${escapeHtml(headingDetail || "General")} (${escapeHtml(inquiry.company)})</h1>
+            lead.company
+          )} — ${escapeHtml(lead.name)}</h1>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:14px;">${htmlRows}</table>
       </div>
@@ -86,8 +80,8 @@ export async function sendInquiryNotification(inquiry: StoredInquiry): Promise<E
       body: JSON.stringify({
         from: fromEmail,
         to: [toEmail],
-        reply_to: inquiry.email,
-        subject: `[EastField ${isSample ? "Sample" : "B2B"}] ${inquiry.grade} | ${inquiry.company}`,
+        reply_to: lead.email,
+        subject: `[EastField ${isSample ? "Sample Request" : "Business Enquiry"}] ${lead.company}`,
         html,
       }),
     });

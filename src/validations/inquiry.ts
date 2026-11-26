@@ -1,33 +1,5 @@
 import { z } from "zod";
 
-export const BUYER_TYPES = [
-  "Importer",
-  "Exporter",
-  "Distributor",
-  "Wholesaler",
-  "Food manufacturer",
-  "Retailer",
-  "Retail",
-  "E-commerce brand",
-  "E-commerce/D2C",
-  "HoReCa",
-  "Institutional buyer",
-  "Other",
-] as const;
-
-export const FORM_BUYER_TYPES = [
-  "Importer",
-  "Exporter",
-  "Distributor",
-  "Wholesaler",
-  "Food manufacturer",
-  "Retailer",
-  "E-commerce brand",
-  "HoReCa",
-  "Institutional buyer",
-  "Other",
-] as const;
-
 export const PRODUCT_GRADES = [
   "4 Suta",
   "5 Suta",
@@ -35,128 +7,95 @@ export const PRODUCT_GRADES = [
   "6+ Suta",
   "Custom requirement",
   "Not sure",
-  "Not sure yet",
 ] as const;
 
-export const FORM_PRODUCT_GRADES = [
-  "4 Suta",
-  "5 Suta",
-  "6 Suta",
-  "6+ Suta",
-  "Custom requirement",
-  "Not sure",
-] as const;
+export const ENQUIRY_TYPES = ["enquiry", "sample"] as const;
+export type EnquiryMode = (typeof ENQUIRY_TYPES)[number];
 
-export const INQUIRY_MODES = ["sample", "specification"] as const;
+const phoneValidation = z
+  .string()
+  .trim()
+  .min(7, "Please enter a valid mobile number (include country code if international).")
+  .max(28, "Mobile number must be 28 characters or fewer.")
+  .regex(/^[+\d\s().-]+$/, "Mobile number may only contain digits, +, spaces, hyphens, or parentheses.")
+  .refine(
+    (val) => {
+      const digits = val.replace(/\D/g, "");
+      return digits.length >= 7 && digits.length <= 15;
+    },
+    { message: "Mobile number must contain between 7 and 15 digits." }
+  );
 
-const commonFields = {
-  name: z
-    .string()
-    .trim()
-    .min(2, "Please enter your full name (at least 2 characters).")
-    .max(120, "Name must be 120 characters or fewer."),
+const mandatoryLeadFields = {
   company: z
     .string()
     .trim()
-    .min(2, "Please enter your company name.")
+    .min(2, "Company name is required (at least 2 characters).")
     .max(160, "Company name must be 160 characters or fewer."),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Full name is required (at least 2 characters).")
+    .max(120, "Full name must be 120 characters or fewer."),
+  phone: phoneValidation,
   email: z
     .string()
     .trim()
     .email("Please enter a valid business email address.")
     .max(180, "Email address is too long."),
-  phone: z
-    .string()
-    .trim()
-    .min(6, "Please enter a valid contact phone number with country/area code.")
-    .max(32, "Phone number must be 32 characters or fewer.")
-    .regex(/^[+\d\s().-]+$/, "Phone number contains unsupported characters."),
-  buyerType: z.enum(BUYER_TYPES, {
-    message: "Please select your buyer type.",
-  }),
-  country: z
-    .string()
-    .trim()
-    .min(2, "Please specify your country.")
-    .max(100, "Country name is too long."),
-  grade: z.enum(PRODUCT_GRADES, {
-    message: "Please select a product grade.",
-  }),
-  application: z
-    .string()
-    .trim()
-    .min(2, "Please describe the intended application (e.g., roasting, retail packing, bulk trade).")
-    .max(200, "Intended application must be 200 characters or fewer."),
-  destination: z
-    .string()
-    .trim()
-    .min(2, "Please specify the shipping destination or port.")
-    .max(160, "Destination must be 160 characters or fewer."),
-  packaging: z
-    .string()
-    .trim()
-    .max(240, "Packaging requirements must be 240 characters or fewer.")
-    .optional()
-    .default(""),
-  quality: z
-    .string()
-    .trim()
-    .max(320, "Quality requirements must be 320 characters or fewer.")
-    .optional()
-    .default(""),
-  details: z
-    .string()
-    .trim()
-    .max(2000, "Additional details must be 2000 characters or fewer.")
-    .optional()
-    .default(""),
   website: z.string().max(0, "Spam detected.").optional().default(""),
   formStartedAt: z.number().optional(),
 };
 
-const sampleInquirySchema = z.object({
-  ...commonFields,
-  requestType: z.literal("sample"),
-  sampleRequirement: z
+export const generalEnquirySchema = z.object({
+  ...mandatoryLeadFields,
+  requestType: z.literal("enquiry"),
+  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
+  sampleRequirement: z.string().trim().max(240).optional().default(""),
+  destination: z.string().trim().max(160).optional().default(""),
+  details: z
     .string()
     .trim()
-    .min(2, "Please describe your sample requirement (e.g., 500 g 6 Suta evaluation pack).")
-    .max(240, "Sample requirement must be 240 characters or fewer."),
-  quantity: z
-    .string()
-    .trim()
-    .max(120, "Quantity description must be 120 characters or fewer.")
+    .max(1500, "Message must be 1500 characters or fewer.")
     .optional()
     .default(""),
 });
 
-const specificationInquirySchema = z.object({
-  ...commonFields,
-  requestType: z.literal("specification"),
+export const sampleRequestSchema = z.object({
+  ...mandatoryLeadFields,
+  requestType: z.literal("sample"),
+  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
   sampleRequirement: z
     .string()
     .trim()
     .max(240, "Sample requirement must be 240 characters or fewer.")
     .optional()
     .default(""),
-  quantity: z
+  destination: z
     .string()
     .trim()
-    .min(2, "Please specify your required quantity (e.g., 500 kg, 2 MT).")
-    .max(120, "Quantity description must be 120 characters or fewer."),
+    .max(160, "Shipping destination must be 160 characters or fewer.")
+    .optional()
+    .default(""),
+  details: z
+    .string()
+    .trim()
+    .max(2000, "Additional requirements must be 2000 characters or fewer.")
+    .optional()
+    .default(""),
 });
 
-const unionSchema = z.discriminatedUnion("requestType", [
-  sampleInquirySchema,
-  specificationInquirySchema,
+const leadUnionSchema = z.discriminatedUnion("requestType", [
+  generalEnquirySchema,
+  sampleRequestSchema,
 ]);
 
 export const inquirySchema = z.preprocess((val) => {
   if (val && typeof val === "object" && !("requestType" in val)) {
-    return { ...(val as Record<string, unknown>), requestType: "specification" };
+    return { ...(val as Record<string, unknown>), requestType: "enquiry" };
   }
   return val;
-}, unionSchema);
+}, leadUnionSchema);
 
-export type InquiryPayload = z.infer<typeof unionSchema>;
-export type InquiryMode = (typeof INQUIRY_MODES)[number];
+export type InquiryPayload = z.infer<typeof leadUnionSchema>;
+export type ProductGradeOption = (typeof PRODUCT_GRADES)[number];

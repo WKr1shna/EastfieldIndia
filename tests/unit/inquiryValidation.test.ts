@@ -1,70 +1,63 @@
 import { describe, expect, it } from "vitest";
 import { inquirySchema } from "@/validations/inquiry";
 
-describe("inquirySchema validation", () => {
-  const validSpecPayload = {
-    requestType: "specification" as const,
-    name: "Ananya Sharma",
+describe("inquirySchema lead & sample validation", () => {
+  const validEnquiryPayload = {
+    requestType: "enquiry" as const,
     company: "Himalayan Foods Pvt Ltd",
-    email: "procurement@himalayanfoods.com",
+    name: "Ananya Sharma",
     phone: "+91 98111 22334",
-    buyerType: "Food manufacturer" as const,
-    country: "India",
-    grade: "6 Suta" as const,
-    quantity: "1,000 kg monthly",
-    application: "Flavoured roasted retail packs",
-    destination: "Bengaluru, Karnataka",
-    packaging: "10 kg nitrogen-flushed lined cartons",
-    quality: "Moisture < 11%, broken < 2%",
-    details: "Looking for sample evaluation before Q2 commitment.",
+    email: "procurement@himalayanfoods.com",
+    details: "Looking to connect regarding wholesale supply.",
     website: "",
   };
 
   const validSamplePayload = {
     requestType: "sample" as const,
-    name: "Rohan Verma",
     company: "Verma Snack Co",
-    email: "rohan@vermasnacks.in",
-    phone: "+91 98100 12345",
-    country: "India",
-    buyerType: "E-commerce brand" as const,
+    name: "Rohan Verma",
+    phone: "+44 20 7946 0958",
+    email: "rohan@vermasnacks.co.uk",
     grade: "6+ Suta" as const,
     sampleRequirement: "500 g 6+ Suta evaluation pack",
-    application: "Clean-label roasted snacks",
-    destination: "Mumbai, Maharashtra",
+    destination: "London, UK",
     details: "Reviewing crunch and expansion before bulk order.",
     website: "",
   };
 
-  it("accepts a complete valid B2B specification inquiry", () => {
-    const result = inquirySchema.safeParse(validSpecPayload);
+  it("accepts minimal 4-field General Business Enquiry", () => {
+    const result = inquirySchema.safeParse(validEnquiryPayload);
     expect(result.success).toBe(true);
   });
 
-  it("accepts a complete valid Request a Sample submission", () => {
+  it("accepts Request a Sample with international phone number", () => {
     const result = inquirySchema.safeParse(validSamplePayload);
     expect(result.success).toBe(true);
   });
 
-  it("rejects invalid email and missing sampleRequirement in sample mode", () => {
+  it("requires Company Name, Full Name, Mobile Number, and Email for sample requests", () => {
     const result = inquirySchema.safeParse({
-      ...validSamplePayload,
-      email: "not-an-email",
-      sampleRequirement: "",
-      buyerType: "InvalidType",
+      requestType: "sample",
+      company: "",
+      name: "",
+      phone: "123",
+      email: "bad-email",
+      grade: "6 Suta",
+      website: "",
     });
     expect(result.success).toBe(false);
     if (!result.success) {
       const fields = result.error.issues.map((i) => i.path[0]);
+      expect(fields).toContain("company");
+      expect(fields).toContain("name");
+      expect(fields).toContain("phone");
       expect(fields).toContain("email");
-      expect(fields).toContain("sampleRequirement");
-      expect(fields).toContain("buyerType");
     }
   });
 
   it("rejects honeypot spam submissions when website field is populated", () => {
     const result = inquirySchema.safeParse({
-      ...validSpecPayload,
+      ...validEnquiryPayload,
       website: "https://spam.example.com",
     });
     expect(result.success).toBe(false);

@@ -4,13 +4,13 @@ import React from "react";
 import { ArrowRight, Globe2, PackageCheck, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { BUYER_SEGMENTS } from "@/features/sourcing/ecosystems";
 import { siteConfig } from "@/config/site";
-import { useInquiryPreset, type BuyerTypeOption } from "@/components/ui/InquiryContext";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 const BUYER_ICONS = [Globe2, PackageCheck, ShoppingBag, UtensilsCrossed] as const;
 
 export function B2BBuyersSection() {
-  const { openSampleRequest, requestWithBuyerType } = useInquiryPreset();
+  const { openSampleRequest, scrollToEnquiry } = useInquiryPreset();
 
   return (
     <section id="buyers" className="bg-grain-ivory border-b border-ivory-300 py-16 sm:py-24">
@@ -46,12 +46,13 @@ export function B2BBuyersSection() {
                 <span>Request a Sample</span>
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
-              <a
-                href="#inquiry"
+              <button
+                type="button"
+                onClick={() => scrollToEnquiry()}
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-forest-800/25 bg-white px-5 py-3.5 text-sm font-semibold tracking-wide text-forest-900 transition-colors hover:border-forest-800"
               >
-                <span>Tell Us What You Need</span>
-              </a>
+                <span>Connect With Us</span>
+              </button>
             </div>
           </div>
         </Reveal>
@@ -100,12 +101,10 @@ export function B2BBuyersSection() {
                   <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-ivory-200 pt-4">
                     <button
                       type="button"
-                      onClick={() =>
-                        requestWithBuyerType(segment.inquiryValue as BuyerTypeOption, "sample")
-                      }
+                      onClick={() => openSampleRequest()}
                       className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-forest-800 uppercase transition-colors hover:text-gold-600"
                     >
-                      <span>Request Sample ({segment.inquiryValue})</span>
+                      <span>Request a Sample</span>
                       <ArrowRight
                         className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
                         aria-hidden="true"
