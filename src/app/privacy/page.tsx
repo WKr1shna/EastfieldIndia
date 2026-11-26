@@ -90,7 +90,14 @@ export default function PrivacyPolicyPage() {
               Lead records are validated server-side, protected by rate limiting and access
               controls, and retained only as long as reasonably required to manage commercial B2B
               enquiries and legal compliance. To request correction or removal of your contact
-              details, please reach out through our enquiry form or official LinkedIn channel.
+              details, please reach out to us at{" "}
+              <a
+                href={`mailto:${siteConfig.contactEmail}`}
+                className="font-medium text-forest-800 underline hover:text-gold-600"
+              >
+                {siteConfig.contactEmail}
+              </a>
+              , through our enquiry form, or via our official LinkedIn channel.
             </p>
           </section>
         </div>

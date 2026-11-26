@@ -16,10 +16,10 @@ function escapeHtml(input: string): string {
 
 export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOutcome> {
   const apiKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.INQUIRY_TO_EMAIL;
-  const fromEmail = process.env.INQUIRY_FROM_EMAIL || "inquiries@eastfieldindia.com";
+  const toEmail = process.env.INQUIRY_TO_EMAIL || "enquiries@eastfieldindia.com";
+  const fromEmail = process.env.INQUIRY_FROM_EMAIL || "enquiries@eastfieldindia.com";
 
-  if (!apiKey || !toEmail) {
+  if (!apiKey) {
     return { sent: false, provider: "none" };
   }
 

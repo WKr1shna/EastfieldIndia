@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, Mail, MapPin } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { MAKHANA_GRADES } from "@/features/products/grades";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -93,13 +93,20 @@ export function Footer() {
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
 
-            <div className="mt-6 border-t border-white/10 pt-4 text-xs text-ivory-300/80">
+            <div className="mt-6 space-y-2 border-t border-white/10 pt-4 text-xs text-ivory-300/80">
+              <a
+                href={`mailto:${siteConfig.contactEmail}`}
+                className="inline-flex items-center gap-1.5 font-medium text-gold-400 transition-colors hover:text-gold-300 hover:underline"
+              >
+                <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{siteConfig.contactEmail}</span>
+              </a>
               <p>Founder: {siteConfig.founder.name}</p>
               <a
                 href={siteConfig.founder.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-gold-400 hover:underline"
+                className="inline-flex items-center gap-1 text-gold-400 hover:underline"
               >
                 <span>LinkedIn Profile</span>
                 <ArrowUpRight className="h-3 w-3" aria-hidden="true" />

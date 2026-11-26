@@ -167,7 +167,20 @@ export function InquiryFormSection() {
                 </div>
                 <p className="mt-3 text-base font-semibold text-ivory-50">{siteConfig.name}</p>
                 <p className="mt-0.5 text-sm text-ivory-300/85">{siteConfig.location}</p>
-                <dl className="mt-4 border-t border-white/10 pt-3 text-xs">
+                <dl className="mt-4 space-y-2.5 border-t border-white/10 pt-3 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <dt className="font-medium tracking-wider text-ivory-300/75 uppercase">
+                      Enquiries
+                    </dt>
+                    <dd>
+                      <a
+                        href={`mailto:${siteConfig.contactEmail}`}
+                        className="font-medium text-gold-400 transition-colors hover:text-gold-300 hover:underline"
+                      >
+                        {siteConfig.contactEmail}
+                      </a>
+                    </dd>
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <dt className="font-medium tracking-wider text-ivory-300/75 uppercase">
                       GSTIN

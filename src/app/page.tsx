@@ -24,6 +24,7 @@ export default function HomePage() {
     name: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
+    email: siteConfig.contactEmail,
     taxID: siteConfig.gstin,
     address: {
       "@type": "PostalAddress",

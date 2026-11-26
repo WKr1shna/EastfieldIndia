@@ -19,7 +19,7 @@ export const siteConfig = {
     role: "Founder, EastField India",
     linkedinUrl: "https://www.linkedin.com/in/surya-alok-567404250/",
   },
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "",
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "enquiries@eastfieldindia.com",
   navigation: [
     { label: "Home", href: "#home" },
     { label: "About", href: "#about" },
