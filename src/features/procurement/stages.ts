@@ -73,34 +73,22 @@ export const BUYER_JOURNEY_STEPS: BuyerJourneyStep[] = [
   },
   {
     step: "02",
-    title: "CHECK AVAILABILITY",
-    description: "Review sourcing options, timing and indicative commercial terms.",
+    title: "SOURCE & EVALUATE SAMPLE",
+    description:
+      "Review sourcing options, timing and indicative terms, then evaluate samples to align expectations and acceptance criteria.",
     stageRef: "02",
     stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "03",
-    title: "EVALUATE THE SAMPLE",
-    description: "Align product expectations and acceptance criteria.",
+    title: "CONFIRM & VERIFY THE LOT",
+    description:
+      "Agree quantity, grade, packing and delivery terms, then aggregate the lot and verify agreed parameters.",
     stageRef: "02",
     stageTitle: "SOURCE & VERIFY",
   },
   {
     step: "04",
-    title: "CONFIRM THE LOT",
-    description: "Agree quantity, grade, checks, packing and delivery terms.",
-    stageRef: "02",
-    stageTitle: "SOURCE & VERIFY",
-  },
-  {
-    step: "05",
-    title: "AGGREGATE & VERIFY",
-    description: "Consolidate the lot and assess agreed parameters.",
-    stageRef: "02",
-    stageTitle: "SOURCE & VERIFY",
-  },
-  {
-    step: "06",
     title: "DISPATCH & REPLENISH",
     description: "Furnish the order and discuss the next buying cycle.",
     stageRef: "03",

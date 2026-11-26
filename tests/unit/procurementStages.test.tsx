@@ -4,8 +4,8 @@ import { render, within } from "@testing-library/react";
 import { InquiryProvider } from "@/components/ui/InquiryContext";
 import { ProcurementSection } from "@/components/sections/ProcurementSection";
 
-describe("ProcurementSection 6-card phase labels", () => {
-  it("groups Steps 01–06 under STAGE 01 UNDERSTAND, STAGE 02 SOURCE & VERIFY, and STAGE 03 SUPPLY", () => {
+describe("ProcurementSection 4-card phase labels", () => {
+  it("groups Steps 01–04 under STAGE 01 UNDERSTAND, STAGE 02 SOURCE & VERIFY (2 cards), and STAGE 03 SUPPLY", () => {
     const { container } = render(
       <InquiryProvider>
         <ProcurementSection />
@@ -15,15 +15,13 @@ describe("ProcurementSection 6-card phase labels", () => {
     const list = container.querySelector("ol");
     expect(list).not.toBeNull();
     const cards = Array.from(list!.querySelectorAll("li"));
-    expect(cards).toHaveLength(6);
+    expect(cards).toHaveLength(4);
 
     const expected = [
       { step: "01", stage: "STAGE 01", phase: "UNDERSTAND", title: "SHARE THE BRIEF" },
-      { step: "02", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "CHECK AVAILABILITY" },
-      { step: "03", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "EVALUATE THE SAMPLE" },
-      { step: "04", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "CONFIRM THE LOT" },
-      { step: "05", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "AGGREGATE & VERIFY" },
-      { step: "06", stage: "STAGE 03", phase: "SUPPLY", title: "DISPATCH & REPLENISH" },
+      { step: "02", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "SOURCE & EVALUATE SAMPLE" },
+      { step: "03", stage: "STAGE 02", phase: "SOURCE & VERIFY", title: "CONFIRM & VERIFY THE LOT" },
+      { step: "04", stage: "STAGE 03", phase: "SUPPLY", title: "DISPATCH & REPLENISH" },
     ];
 
     cards.forEach((card, idx) => {

@@ -113,7 +113,7 @@ export function ProcurementSection() {
           </div>
         </Reveal>
 
-        {/* Section 10: Integrated 6-Step Buyer Execution Flow */}
+        {/* Section 10: Integrated 4-Step Buyer Execution Flow */}
         <Reveal delayMs={160}>
           <div className="mt-10 rounded-2xl border border-ivory-300 bg-white p-6 sm:p-8">
             <div className="flex flex-col justify-between gap-2 border-b border-ivory-200 pb-5 sm:flex-row sm:items-end">
@@ -130,10 +130,10 @@ export function ProcurementSection() {
               </p>
             </div>
 
-            {/* Desktop Phase Grouping Header aligning directly over the 6 execution cards */}
+            {/* Desktop Phase Grouping Header aligning directly over the 4 execution cards */}
             <div
               aria-hidden="true"
-              className="mt-6 hidden gap-4 lg:grid lg:grid-cols-6"
+              className="mt-6 hidden gap-4 lg:grid lg:grid-cols-4"
             >
               <div className="lg:col-span-1 flex items-center justify-between rounded-lg border border-forest-800/20 bg-forest-900/[0.04] px-3 py-1.5">
                 <span className="font-mono text-[10px] font-bold tracking-wider text-forest-900">
@@ -143,9 +143,9 @@ export function ProcurementSection() {
                   UNDERSTAND
                 </span>
               </div>
-              <div className="lg:col-span-4 flex items-center justify-between rounded-lg border border-gold-500/40 bg-gold-500/10 px-3.5 py-1.5">
+              <div className="lg:col-span-2 flex items-center justify-between rounded-lg border border-gold-500/40 bg-gold-500/10 px-3.5 py-1.5">
                 <span className="font-mono text-[10px] font-bold tracking-wider text-gold-700">
-                  STAGE 02 · STEPS 02–05
+                  STAGE 02 · STEPS 02–03
                 </span>
                 <span className="text-[10px] font-bold tracking-[0.14em] text-forest-900 uppercase">
                   SOURCE &amp; VERIFY
@@ -161,7 +161,7 @@ export function ProcurementSection() {
               </div>
             </div>
 
-            <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:mt-3 lg:grid-cols-6">
+            <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:mt-3 lg:grid-cols-4">
               {BUYER_JOURNEY_STEPS.map((item) => {
                 const isSourcePhase = item.stageRef === "02";
                 return (
