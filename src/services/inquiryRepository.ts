@@ -2,9 +2,8 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 export interface SampleDetailsRecord {
-  grade: string;
-  sampleRequirement: string;
-  destination: string;
+  desiredGrade: string;
+  productType: string;
   additionalRequirements: string;
 }
 
@@ -171,9 +170,8 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     "Skipped Initial",
     "Submitted Details",
     "Requested Sample",
-    "Sample Grade",
-    "Sample Requirement",
-    "Destination",
+    "Desired Grade",
+    "Product Type",
     "Additional Message",
     "First Visit",
     "Latest Visit",
@@ -190,9 +188,8 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     lead.skippedInitial,
     lead.submittedDetails,
     lead.requestedSample,
-    lead.sampleDetails?.grade ?? "",
-    lead.sampleDetails?.sampleRequirement ?? "",
-    lead.sampleDetails?.destination ?? "",
+    lead.sampleDetails?.desiredGrade ?? "",
+    lead.sampleDetails?.productType ?? "",
     lead.sampleDetails?.additionalRequirements || lead.additionalMessage,
     lead.firstVisitAt,
     lead.latestVisitAt,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inquirySchema } from "@/validations/inquiry";
+import { SAMPLE_GRADES, SAMPLE_PRODUCT_TYPES, inquirySchema } from "@/validations/inquiry";
 
 describe("inquirySchema lead & sample validation", () => {
   const validEnquiryPayload = {
@@ -18,9 +18,8 @@ describe("inquirySchema lead & sample validation", () => {
     name: "Rohan Verma",
     phone: "+44 20 7946 0958",
     email: "rohan@vermasnacks.co.uk",
-    grade: "6+ Suta" as const,
-    sampleRequirement: "500 g 6+ Suta evaluation pack",
-    destination: "London, UK",
+    desiredGrade: "5+ Suta" as const,
+    productType: "Handpicked" as const,
     details: "Reviewing crunch and expansion before bulk order.",
     website: "",
   };
@@ -30,19 +29,38 @@ describe("inquirySchema lead & sample validation", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts Request a Sample with international phone number", () => {
-    const result = inquirySchema.safeParse(validSamplePayload);
-    expect(result.success).toBe(true);
+  it("accepts all 6 grades paired independently with Regular or Handpicked", () => {
+    expect(SAMPLE_GRADES).toEqual([
+      "4 Suta",
+      "4+ Suta",
+      "5 Suta",
+      "5+ Suta",
+      "6 Suta",
+      "6+ Suta",
+    ]);
+    expect(SAMPLE_PRODUCT_TYPES).toEqual(["Regular", "Handpicked"]);
+
+    for (const desiredGrade of SAMPLE_GRADES) {
+      for (const productType of SAMPLE_PRODUCT_TYPES) {
+        const result = inquirySchema.safeParse({
+          ...validSamplePayload,
+          desiredGrade,
+          productType,
+        });
+        expect(result.success).toBe(true);
+      }
+    }
   });
 
-  it("requires Company Name, Full Name, Mobile Number, and Email for sample requests", () => {
+  it("requires Full Name, Mobile, Company, Email, Desired Grade, and Product Type for samples", () => {
     const result = inquirySchema.safeParse({
       requestType: "sample",
       company: "",
       name: "",
       phone: "123",
       email: "bad-email",
-      grade: "6 Suta",
+      desiredGrade: "",
+      productType: "",
       website: "",
     });
     expect(result.success).toBe(false);
@@ -52,6 +70,8 @@ describe("inquirySchema lead & sample validation", () => {
       expect(fields).toContain("name");
       expect(fields).toContain("phone");
       expect(fields).toContain("email");
+      expect(fields).toContain("desiredGrade");
+      expect(fields).toContain("productType");
     }
   });
 

@@ -1,19 +1,24 @@
 import { z } from "zod";
 
-export const PRODUCT_GRADES = [
+export const SAMPLE_GRADES = [
   "4 Suta",
+  "4+ Suta",
   "5 Suta",
+  "5+ Suta",
   "6 Suta",
   "6+ Suta",
-  "Custom requirement",
-  "Not sure",
 ] as const;
+
+export const SAMPLE_PRODUCT_TYPES = ["Regular", "Handpicked"] as const;
 
 export const ENQUIRY_TYPES = ["entry_lead", "enquiry", "sample"] as const;
 export type EnquiryMode = (typeof ENQUIRY_TYPES)[number];
 
 export const LEAD_SOURCES = ["entry_popup", "sample_gate", "general_enquiry"] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
+
+export type SampleGradeOption = (typeof SAMPLE_GRADES)[number];
+export type SampleProductTypeOption = (typeof SAMPLE_PRODUCT_TYPES)[number];
 
 const phoneValidation = z
   .string()
@@ -59,18 +64,12 @@ const mandatoryLeadFields = {
 export const entryLeadSchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("entry_lead"),
-  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
-  sampleRequirement: z.string().trim().max(240).optional().default(""),
-  destination: z.string().trim().max(160).optional().default(""),
   details: z.string().trim().max(1500).optional().default(""),
 });
 
 export const generalEnquirySchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("enquiry"),
-  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
-  sampleRequirement: z.string().trim().max(240).optional().default(""),
-  destination: z.string().trim().max(160).optional().default(""),
   details: z
     .string()
     .trim()
@@ -82,19 +81,12 @@ export const generalEnquirySchema = z.object({
 export const sampleRequestSchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("sample"),
-  grade: z.enum(PRODUCT_GRADES).optional().default("Not sure"),
-  sampleRequirement: z
-    .string()
-    .trim()
-    .max(240, "Sample requirement must be 240 characters or fewer.")
-    .optional()
-    .default(""),
-  destination: z
-    .string()
-    .trim()
-    .max(160, "Shipping destination must be 160 characters or fewer.")
-    .optional()
-    .default(""),
+  desiredGrade: z.enum(SAMPLE_GRADES, {
+    message: "Please select your desired makhana grade.",
+  }),
+  productType: z.enum(SAMPLE_PRODUCT_TYPES, {
+    message: "Please select a product type (Regular or Handpicked).",
+  }),
   details: z
     .string()
     .trim()
@@ -117,4 +109,3 @@ export const inquirySchema = z.preprocess((val) => {
 }, leadUnionSchema);
 
 export type InquiryPayload = z.infer<typeof leadUnionSchema>;
-export type ProductGradeOption = (typeof PRODUCT_GRADES)[number];

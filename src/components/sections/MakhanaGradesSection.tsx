@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ArrowRight, CheckCircle2, Layers } from "lucide-react";
 import { MAKHANA_GRADES, SUPPLY_FORMATS, type MakhanaGrade } from "@/features/products/grades";
 import { siteConfig } from "@/config/site";
-import { useInquiryPreset, type GradeOption } from "@/components/ui/InquiryContext";
+import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function MakhanaGradesSection() {
@@ -175,7 +175,7 @@ export function MakhanaGradesSection() {
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => openSampleRequest(selectedGrade.inquiryValue as GradeOption)}
+                    onClick={() => openSampleRequest(selectedGrade.inquiryValue)}
                     className="inline-flex items-center gap-2 rounded-full bg-forest-900 px-6 py-3 text-sm font-semibold tracking-wide text-gold-400 uppercase transition-colors hover:bg-forest-800"
                   >
                     <span>Request a Sample · {selectedGrade.name}</span>

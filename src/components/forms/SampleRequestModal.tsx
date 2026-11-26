@@ -2,7 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Edit3, Loader2, PackageCheck, Send, X } from "lucide-react";
-import { PRODUCT_GRADES, inquirySchema, type ProductGradeOption } from "@/validations/inquiry";
+import {
+  SAMPLE_GRADES,
+  SAMPLE_PRODUCT_TYPES,
+  inquirySchema,
+  type SampleGradeOption,
+  type SampleProductTypeOption,
+} from "@/validations/inquiry";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
 
@@ -22,8 +28,7 @@ export function SampleRequestModal() {
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
-  const [sampleRequirement, setSampleRequirement] = useState("");
-  const [destination, setDestination] = useState("");
+  const [productType, setProductType] = useState<SampleProductTypeOption | "">("");
   const [details, setDetails] = useState("");
   const [website, setWebsite] = useState("");
   const [editingSaved, setEditingSaved] = useState(false);
@@ -32,6 +37,10 @@ export function SampleRequestModal() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serverMessage, setServerMessage] = useState("");
   const [referenceId, setReferenceId] = useState("");
+  const [submittedSummary, setSubmittedSummary] = useState<{
+    grade: string;
+    productType: string;
+  } | null>(null);
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -41,6 +50,7 @@ export function SampleRequestModal() {
       setStatus("idle");
       setServerMessage("");
       setFieldErrors({});
+      setSubmittedSummary(null);
       if (hasSavedContact) {
         setName(savedContact.name);
         setPhone(savedContact.phone);
@@ -98,9 +108,8 @@ export function SampleRequestModal() {
       latestVisitAt: visitorState.latestVisitAt,
       leadSource: visitorState.skippedInitial ? ("sample_gate" as const) : ("entry_popup" as const),
       skippedInitial: visitorState.skippedInitial,
-      grade: selectedGrade,
-      sampleRequirement,
-      destination,
+      desiredGrade: selectedGrade,
+      productType,
       details,
       website,
       formStartedAt,
@@ -120,7 +129,7 @@ export function SampleRequestModal() {
         setEditingSaved(true);
       }
       setStatus("error");
-      setServerMessage("Please verify your business and contact details before submitting.");
+      setServerMessage("Please complete the highlighted required sample and contact fields.");
       return;
     }
 
@@ -156,14 +165,16 @@ export function SampleRequestModal() {
         company,
         email,
       });
+      setSubmittedSummary({
+        grade: selectedGrade,
+        productType,
+      });
       setStatus("success");
       setReferenceId(data.referenceId || "");
       setServerMessage(
         data.message ||
           "Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
       );
-      setSampleRequirement("");
-      setDestination("");
       setDetails("");
       setFormStartedAt(Date.now());
     } catch {
@@ -173,7 +184,7 @@ export function SampleRequestModal() {
   }
 
   const inputClass =
-    "mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/60 focus:border-forest-800 focus:outline-none focus:ring-2 focus:ring-gold-500/40";
+    "mt-1.5 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/60 focus:border-forest-800 focus:outline-none focus:ring-2 focus:ring-gold-500/40";
 
   return (
     <div
@@ -229,6 +240,13 @@ export function SampleRequestModal() {
                   Reference: {referenceId}
                 </p>
               )}
+              {submittedSummary && (
+                <div className="mx-auto mt-4 max-w-xs rounded-xl border border-ivory-300 bg-ivory-50 px-4 py-3 text-left text-xs text-forest-900">
+                  <p className="font-bold tracking-wider text-gold-600 uppercase">Sample Requested</p>
+                  <p className="mt-1">Grade: {submittedSummary.grade}</p>
+                  <p className="mt-0.5">Product Type: {submittedSummary.productType}</p>
+                </div>
+              )}
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-600">
                 {serverMessage}
               </p>
@@ -239,10 +257,11 @@ export function SampleRequestModal() {
                     setStatus("idle");
                     setReferenceId("");
                     setServerMessage("");
+                    setSubmittedSummary(null);
                   }}
                   className="rounded-full border border-forest-800/25 bg-ivory-50 px-5 py-2.5 text-xs font-semibold tracking-wider text-forest-900 uppercase hover:bg-ivory-200"
                 >
-                  Request Another Grade
+                  Request Another Sample
                 </button>
                 <button
                   type="button"
@@ -281,7 +300,7 @@ export function SampleRequestModal() {
                 </div>
               )}
 
-              {/* Saved Business Details Summary (No forced re-entry) */}
+              {/* Previously Collected Business Details */}
               <div className="rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
@@ -429,10 +448,10 @@ export function SampleRequestModal() {
                 )}
               </div>
 
-              {/* Streamlined Optional Sample Specification */}
+              {/* Sample Specification: Desired Makhana Grade + Product Type */}
               <div className="mt-4 rounded-xl border border-ivory-300 bg-white p-4 sm:p-5">
                 <p className="text-xs font-bold tracking-[0.14em] text-forest-900 uppercase">
-                  Sample Details <span className="font-normal text-ink-500">(Optional)</span>
+                  Sample Specification
                 </p>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -441,57 +460,65 @@ export function SampleRequestModal() {
                       htmlFor="sample-grade"
                       className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                     >
-                      Makhana Grade
+                      Desired Makhana Grade <span className="text-red-700">*</span>
                     </label>
                     <select
                       id="sample-grade"
-                      name="grade"
+                      name="desiredGrade"
+                      required
                       value={selectedGrade}
-                      onChange={(e) => setSelectedGrade(e.target.value as ProductGradeOption)}
-                      className={`${inputClass} border-ivory-300`}
+                      onChange={(e) => {
+                        setSelectedGrade(e.target.value as SampleGradeOption | "");
+                        clearFieldError("desiredGrade");
+                      }}
+                      aria-invalid={Boolean(fieldErrors.desiredGrade)}
+                      className={`${inputClass} ${
+                        fieldErrors.desiredGrade ? "border-red-500" : "border-ivory-300"
+                      }`}
                     >
-                      {PRODUCT_GRADES.map((g) => (
-                        <option key={g} value={g}>
-                          {g}
+                      <option value="">Select your desired grade</option>
+                      {SAMPLE_GRADES.map((grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
                         </option>
                       ))}
                     </select>
+                    {fieldErrors.desiredGrade && (
+                      <p className="mt-1 text-xs text-red-700">{fieldErrors.desiredGrade}</p>
+                    )}
                   </div>
 
                   <div>
                     <label
-                      htmlFor="sample-requirement"
+                      htmlFor="sample-product-type"
                       className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                     >
-                      Quantity / Sample Requirement
+                      Product Type <span className="text-red-700">*</span>
                     </label>
-                    <input
-                      id="sample-requirement"
-                      name="sampleRequirement"
-                      type="text"
-                      value={sampleRequirement}
-                      onChange={(e) => setSampleRequirement(e.target.value)}
-                      placeholder="e.g., 500 g evaluation pack"
-                      className={`${inputClass} border-ivory-300`}
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label
-                      htmlFor="sample-destination"
-                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    <select
+                      id="sample-product-type"
+                      name="productType"
+                      required
+                      value={productType}
+                      onChange={(e) => {
+                        setProductType(e.target.value as SampleProductTypeOption | "");
+                        clearFieldError("productType");
+                      }}
+                      aria-invalid={Boolean(fieldErrors.productType)}
+                      className={`${inputClass} ${
+                        fieldErrors.productType ? "border-red-500" : "border-ivory-300"
+                      }`}
                     >
-                      Shipping Destination
-                    </label>
-                    <input
-                      id="sample-destination"
-                      name="destination"
-                      type="text"
-                      value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
-                      placeholder="City, state, or country"
-                      className={`${inputClass} border-ivory-300`}
-                    />
+                      <option value="">Select product type</option>
+                      {SAMPLE_PRODUCT_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldErrors.productType && (
+                      <p className="mt-1 text-xs text-red-700">{fieldErrors.productType}</p>
+                    )}
                   </div>
 
                   <div className="sm:col-span-2">
@@ -499,7 +526,8 @@ export function SampleRequestModal() {
                       htmlFor="sample-details"
                       className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
                     >
-                      Additional Requirements
+                      Additional Requirements{" "}
+                      <span className="font-normal text-ink-500">(Optional)</span>
                     </label>
                     <textarea
                       id="sample-details"
@@ -507,16 +535,32 @@ export function SampleRequestModal() {
                       rows={2}
                       value={details}
                       onChange={(e) => setDetails(e.target.value)}
-                      placeholder="Intended application, moisture/broken notes, or estimated order volume..."
+                      placeholder="Quantity/sample pack preference, shipping destination, or quality notes..."
                       className={`${inputClass} border-ivory-300`}
                     />
                   </div>
                 </div>
+
+                {/* Live Selection Summary */}
+                {(selectedGrade || productType) && (
+                  <div
+                    aria-label="Sample selection summary"
+                    className="mt-4 rounded-xl border border-gold-500/35 bg-ivory-50 px-4 py-3 text-xs text-forest-900"
+                  >
+                    <p className="font-bold tracking-wider text-gold-600 uppercase">
+                      Sample Requested
+                    </p>
+                    <ul className="mt-1.5 space-y-0.5 font-medium">
+                      <li>Grade: {selectedGrade || "Not selected yet"}</li>
+                      <li>Product Type: {productType || "Not selected yet"}</li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <p className="text-xs text-ink-600">
-                  Our team will review sample availability and coordinate the next steps.
+                  Our team will review sample availability and get in touch with you.
                 </p>
                 <button
                   type="submit"

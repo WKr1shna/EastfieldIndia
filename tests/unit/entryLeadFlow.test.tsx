@@ -90,8 +90,14 @@ describe("Entry Welcome Modal & Gated Sample Flow (Visitors A, B, C)", () => {
       expect(screen.getByText(/Priya Nair · Lotus Exports/i)).toBeInTheDocument();
     });
 
-    // Submit sample request without re-entering initial 4 details
+    // Select Desired Makhana Grade and Product Type before submitting
     const dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(/Desired Makhana Grade/i), {
+      target: { value: "5+ Suta" },
+    });
+    fireEvent.change(within(dialog).getByLabelText(/Product Type/i), {
+      target: { value: "Handpicked" },
+    });
     fireEvent.click(within(dialog).getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
 
     await waitFor(() => {

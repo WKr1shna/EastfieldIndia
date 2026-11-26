@@ -1,14 +1,14 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import type { ProductGradeOption } from "@/validations/inquiry";
+import { SAMPLE_GRADES, type SampleGradeOption } from "@/validations/inquiry";
 import {
   useSessionContact,
   type SessionBusinessContact,
   type VisitorLeadState,
 } from "@/hooks/useSessionContact";
 
-export type GradeOption = ProductGradeOption;
+export type GradeOption = SampleGradeOption | "";
 export type WelcomeModalMode = "closed" | "entry" | "sample_gate";
 
 interface InquiryPresetState {
@@ -26,12 +26,19 @@ interface InquiryPresetState {
   clearContact: () => void;
   closeWelcomeModal: (skipped?: boolean) => void;
   completeWelcomeForSampleGate: () => void;
-  openSampleRequest: (grade?: GradeOption) => void;
+  openSampleRequest: (grade?: string) => void;
   closeSampleModal: () => void;
   scrollToEnquiry: () => void;
 }
 
 const InquiryContext = createContext<InquiryPresetState | null>(null);
+
+function normalizeSampleGrade(grade?: string): GradeOption {
+  if (!grade) return "";
+  return (SAMPLE_GRADES as readonly string[]).includes(grade)
+    ? (grade as SampleGradeOption)
+    : "";
+}
 
 export function InquiryProvider({
   children,
@@ -42,7 +49,7 @@ export function InquiryProvider({
 }) {
   const [welcomeModalMode, setWelcomeModalMode] = useState<WelcomeModalMode>("closed");
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState<GradeOption>("Not sure");
+  const [selectedGrade, setSelectedGrade] = useState<GradeOption>("");
   const {
     visitorState,
     savedContact,
@@ -52,7 +59,6 @@ export function InquiryProvider({
     clearContact,
   } = useSessionContact();
 
-  // Trigger non-coercive entry welcome modal shortly after initial landing
   useEffect(() => {
     if (disableAutoEntryPopup) return;
     if (visitorState.skippedInitial || visitorState.submittedLead) return;
@@ -79,15 +85,10 @@ export function InquiryProvider({
     setIsSampleModalOpen(true);
   }, []);
 
-  /**
-   * Core Business Rule:
-   * - If initial 4 details have already been submitted, open SampleRequestModal directly.
-   * - Otherwise, require the initial 4 details via WelcomeLeadModal ("sample_gate") first.
-   */
   const openSampleRequest = useCallback(
-    (grade?: GradeOption) => {
-      if (grade) {
-        setSelectedGrade(grade);
+    (grade?: string) => {
+      if (grade !== undefined) {
+        setSelectedGrade(normalizeSampleGrade(grade));
       }
       if (hasSavedContact) {
         setWelcomeModalMode("closed");

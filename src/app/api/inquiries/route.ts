@@ -113,9 +113,8 @@ export async function POST(request: NextRequest) {
     requestedSample: isSample,
     sampleDetails: isSample
       ? {
-          grade: data.grade || "Not sure",
-          sampleRequirement: sanitizeText(data.sampleRequirement || ""),
-          destination: sanitizeText(data.destination || ""),
+          desiredGrade: data.desiredGrade,
+          productType: data.productType,
           additionalRequirements: sanitizeText(data.details || ""),
         }
       : null,

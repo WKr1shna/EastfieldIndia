@@ -59,9 +59,8 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
         phone: "+49 30 1234567",
         company: "Alpen Naturkost GmbH",
         email: "sourcing@alpennaturkost.de",
-        grade: "6+ Suta",
-        sampleRequirement: "500 g 6+ Suta sample pack",
-        destination: "Hamburg, Germany",
+        desiredGrade: "5+ Suta",
+        productType: "Handpicked",
         details: "Requesting sample evaluation.",
         website: "",
         formStartedAt: Date.now() - 5000,
@@ -81,7 +80,8 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
     const stored = JSON.parse(lines[0]) as Record<string, unknown>;
     expect(stored.requestedSample).toBe(true);
     expect(stored.submittedDetails).toBe(true);
-    expect((stored.sampleDetails as Record<string, unknown>).grade).toBe("6+ Suta");
+    expect((stored.sampleDetails as Record<string, unknown>).desiredGrade).toBe("5+ Suta");
+    expect((stored.sampleDetails as Record<string, unknown>).productType).toBe("Handpicked");
   });
 
   it("protects admin leads endpoint with Bearer auth and supports CSV export + filtering", async () => {
