@@ -55,8 +55,8 @@ export const MAKHANA_GRADES: MakhanaGrade[] = [
     sizingContext: "Selected larger suta band; uniformity and visual condition agreed upfront.",
     packagingContext: "Bulk export cartons, lined bags, or private-label coordination.",
     image: "/images/grades/6-suta.jpg",
-    imageAlt: "Illustrative visual of 6 Suta premium retail grade Bihar makhana in a dark green ceramic bowl",
-    visualNote: "Illustrative visual — actual lot size profile confirmed against sample.",
+    imageAlt: "Illustrative visual of 6 Suta premium retail grade Bihar makhana in a ceramic bowl showing natural creases and pores",
+    visualNote: "Illustrative visual — realistic commercial proportion; actual lot size profile confirmed per sample.",
     scaleFactor: 0.94,
   },
   {
@@ -66,12 +66,12 @@ export const MAKHANA_GRADES: MakhanaGrade[] = [
     shortLabel: "Larger-Size Selection",
     summary: "Larger-size requirements, subject to lot assessment.",
     useCase:
-      "Targeted for flagship retail packs, gifting assortments, and export specifications requesting bold pop diameter and high visual appeal.",
+      "Targeted for flagship retail packs, gifting assortments, and export specifications requesting fuller pop diameter while preserving natural makhana texture.",
     sizingContext: "Upper suta selection; availability and count confirmed per seasonal lot.",
     packagingContext: "Protective moisture-barrier bulk packs or brand-ready formats.",
     image: "/images/grades/6-plus-suta.jpg",
-    imageAlt: "Illustrative visual of 6+ Suta large-size selection Bihar makhana in a dark green ceramic bowl",
-    visualNote: "Illustrative visual — actual lot size profile confirmed against sample.",
+    imageAlt: "Illustrative visual of 6+ Suta larger-size Bihar makhana in a matte stoneware bowl showing natural pores and surface flecks",
+    visualNote: "Illustrative visual — realistic jumbo grade proportion; actual lot size profile confirmed per sample.",
     scaleFactor: 1.0,
   },
   {
