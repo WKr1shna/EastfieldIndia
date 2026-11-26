@@ -12,22 +12,27 @@ export function HeroSection() {
   return (
     <section
       id="home"
-      className="relative overflow-hidden border-b border-white/10 text-ivory-100"
+      className="relative overflow-hidden border-b border-white/10 bg-forest-900 text-ivory-100"
     >
-      {/* Full-bleed authentic Bihar wetland & woven basket of makhana background */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <Image
-          src="/images/hero/makhana-pond-hero.jpg"
-          alt="Woven bamboo basket of Bihar-origin makhana beside a sunlit lotus pond at dawn"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[75%_60%] lg:object-center"
-        />
-        {/* Left-to-right deep forest green scrim keeps typography crisp while showcasing the makhana basket */}
-        <div className="absolute inset-0 bg-gradient-to-b from-forest-950/85 via-forest-900/75 to-forest-900/90 lg:bg-gradient-to-r lg:from-forest-950/95 lg:via-forest-900/78 lg:to-forest-950/20" />
-        {/* Bottom blend into Stage 1 scroll colour canvas (#0B3027) */}
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-forest-900 via-forest-900/55 to-transparent" />
+      {/* Authentic Bihar wetland & woven basket of makhana background, bounded to native aspect & resolution to prevent stretching or blur */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex justify-center">
+        <div className="relative h-[340px] w-full max-w-[1440px] shrink-0 overflow-hidden sm:h-[460px] lg:h-full lg:max-h-[768px]">
+          <Image
+            src="/images/hero/makhana-pond-hero.jpg"
+            alt="Woven bamboo basket of Bihar-origin makhana beside a sunlit lotus pond at dawn"
+            fill
+            priority
+            sizes="(max-width: 1440px) 100vw, 1440px"
+            className="object-cover object-[76%_58%] lg:object-[68%_center]"
+          />
+          {/* Left-to-right deep forest green scrim keeps typography crisp while showcasing the makhana basket */}
+          <div className="absolute inset-0 bg-gradient-to-b from-forest-950/80 via-forest-900/60 to-forest-900 lg:bg-gradient-to-r lg:from-forest-950/95 lg:via-forest-900/72 lg:to-forest-950/15" />
+          {/* Side edge feathering into Stage 1 forest canvas (#0B3027) on wide monitors */}
+          <div className="hidden lg:block lg:absolute lg:inset-y-0 lg:left-0 lg:w-24 lg:bg-gradient-to-r lg:from-forest-900 lg:to-transparent" />
+          <div className="hidden lg:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-28 lg:bg-gradient-to-l lg:from-forest-900 lg:to-transparent" />
+          {/* Bottom blend into Stage 1 scroll colour canvas (#0B3027) */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-forest-900 via-forest-900/65 to-transparent" />
+        </div>
       </div>
 
       <div className="relative mx-auto grid max-w-7xl items-end gap-10 px-5 py-16 sm:px-8 sm:py-24 lg:min-h-[640px] lg:grid-cols-12 lg:items-center lg:px-10 lg:py-28">
