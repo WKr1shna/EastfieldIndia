@@ -17,7 +17,7 @@ export function FounderStorySection() {
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Distinct Editorial Manuscript Spread: How we work -> Why we started -> Let's work together */}
-        <div className="relative overflow-hidden rounded-3xl border border-gold-500/40 bg-gradient-to-br from-ivory-50 via-white to-ivory-100 p-7 shadow-xl sm:p-10 lg:p-16">
+        <div className="relative overflow-hidden rounded-3xl border border-gold-500/40 bg-ivory-50 p-7 shadow-xl sm:p-10 lg:p-16">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-3 rounded-2xl border border-gold-500/15"
@@ -26,8 +26,8 @@ export function FounderStorySection() {
           <Reveal>
             <div className="relative border-b border-ivory-300 pb-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs font-semibold tracking-[0.2em] text-gold-600 uppercase">
-                  Why We Started · Founder&apos;s Note
+                <p className="text-xs font-bold tracking-[0.18em] text-gold-600 uppercase sm:text-sm">
+                  Meet the Brains Behind the Vision · Get to Know Our Roots
                 </p>
                 <span className="rounded-full border border-forest-800/20 bg-ivory-200 px-3.5 py-1 text-[11px] font-bold tracking-[0.14em] text-forest-900 uppercase">
                   {siteConfig.productPromise}
@@ -41,55 +41,53 @@ export function FounderStorySection() {
           </Reveal>
 
           <div className="relative mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14">
-            {/* Editorial Sidebar: Founder Portrait & Details */}
+            {/* Editorial Sidebar: Unobstructed Founder Portrait & High-Contrast Nameplate */}
             <div className="lg:col-span-4">
               <Reveal delayMs={80}>
                 <aside className="overflow-hidden rounded-2xl border border-forest-800/15 bg-forest-900 text-ivory-100 shadow-lg">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-white/10 bg-forest-950">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-gold-500/25 bg-forest-950">
                     <Image
                       src="/images/founder/surya-alok.jpg"
                       alt="Surya Alok, Founder of EastField India"
                       fill
                       loading="lazy"
                       sizes="(max-width: 1024px) 100vw, 33vw"
-                      className="object-cover object-[50%_20%]"
+                      className="object-cover object-[50%_18%]"
                     />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/15 to-transparent"
-                    />
-                    <div className="absolute inset-x-6 bottom-5">
-                      <h3 className="text-xl font-semibold text-ivory-50">
-                        {siteConfig.founder.name}
-                      </h3>
-                      <p className="mt-0.5 text-xs font-medium tracking-wider text-gold-400 uppercase">
-                        {siteConfig.founder.role}
-                      </p>
-                    </div>
+                  </div>
+
+                  {/* Dedicated high-contrast nameplate below portrait */}
+                  <div className="border-b border-white/12 bg-forest-950/60 px-7 py-5 sm:px-8">
+                    <h3 className="font-serif text-2xl font-semibold tracking-tight text-ivory-50 sm:text-[1.65rem]">
+                      {siteConfig.founder.name}
+                    </h3>
+                    <p className="mt-1 text-xs font-bold tracking-[0.16em] text-gold-400 uppercase">
+                      {siteConfig.founder.role}
+                    </p>
                   </div>
 
                   <div className="p-7 sm:p-8">
-                    <blockquote className="border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-100">
+                    <blockquote className="border-l-2 border-gold-500 pl-4 font-serif text-lg leading-snug text-ivory-50">
                       &ldquo;Our roots are Indian. Our vision is global.&rdquo;
                     </blockquote>
 
-                    <div className="mt-6 rounded-xl border border-white/10 bg-forest-800/60 p-3.5">
+                    <div className="mt-6 rounded-xl border border-white/15 bg-forest-800/70 p-4">
                       <p className="text-[11px] font-bold tracking-[0.15em] text-gold-400 uppercase">
                         {siteConfig.productPromise}
                       </p>
-                      <p className="mt-1 text-xs text-ivory-200/85">
+                      <p className="mt-1 text-xs text-ivory-100/90">
                         {siteConfig.productPromiseSub}
                       </p>
                     </div>
 
-                    <dl className="mt-6 space-y-3 border-t border-white/15 pt-5 text-xs">
+                    <dl className="mt-6 space-y-3 border-t border-white/15 pt-5 text-sm">
                       <div className="flex items-center justify-between">
-                        <dt className="text-ivory-300/80">Origin Focus</dt>
-                        <dd className="font-semibold text-ivory-100">Bihar, India</dd>
+                        <dt className="text-ivory-200/80">Origin Focus</dt>
+                        <dd className="font-semibold text-ivory-50">Bihar, India</dd>
                       </div>
                       <div className="flex items-center justify-between">
-                        <dt className="text-ivory-300/80">Core Ecosystem</dt>
-                        <dd className="font-semibold text-ivory-100">Purnea &amp; Katihar</dd>
+                        <dt className="text-ivory-200/80">Core Ecosystem</dt>
+                        <dd className="font-semibold text-ivory-50">Purnea &amp; Katihar</dd>
                       </div>
                     </dl>
 
@@ -97,7 +95,7 @@ export function FounderStorySection() {
                       href={siteConfig.founder.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold-500/45 bg-forest-800/80 px-5 py-2.5 text-xs font-semibold tracking-wider text-gold-400 uppercase transition-colors hover:bg-gold-500 hover:text-forest-950"
+                      className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold-500/50 bg-forest-800 px-5 py-3 text-xs font-bold tracking-wider text-gold-400 uppercase transition-colors hover:bg-gold-500 hover:text-forest-950"
                     >
                       <span>Connect on LinkedIn</span>
                       <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -107,15 +105,20 @@ export function FounderStorySection() {
               </Reveal>
             </div>
 
-            {/* Editorial Narrative: Preserved intact + natural transition to working together */}
+            {/* Editorial Narrative: High-contrast ink-900 typography on solid ivory */}
             <div className="lg:col-span-8">
               <Reveal delayMs={140}>
-                <article className="max-w-2xl space-y-5 text-base leading-[1.85] text-ink-800 sm:text-[1.0625rem]">
-                  <p className="text-xs font-semibold tracking-[0.16em] text-ink-500 uppercase">
-                    Surya Alok | Founder, EastField India
-                  </p>
+                <article className="max-w-[64ch] space-y-6 text-[1.0625rem] leading-[1.85] text-ink-900 sm:text-[1.125rem]">
+                  <div className="border-l-2 border-gold-500 pl-4">
+                    <p className="font-serif text-xl font-semibold text-forest-900 sm:text-2xl">
+                      {siteConfig.founder.name}
+                    </p>
+                    <p className="text-xs font-bold tracking-[0.16em] text-forest-700 uppercase">
+                      {siteConfig.founder.role}
+                    </p>
+                  </div>
 
-                  <p className="font-serif text-xl leading-relaxed text-forest-900">
+                  <p className="font-serif text-xl leading-relaxed text-forest-900 sm:text-[1.35rem]">
                     Coming from Bihar, I have a natural connection with the region&apos;s rich food
                     and cultural heritage.
                   </p>
@@ -152,20 +155,19 @@ export function FounderStorySection() {
                     <p className="font-serif text-2xl font-semibold text-forest-900">
                       Our roots are Indian. Our vision is global.
                     </p>
-                    <p className="mt-2 text-sm font-medium text-ink-600">
-                      — Surya Alok
-                      <br />
-                      Founder, EastField India
+                    <p className="mt-3 text-base font-bold text-forest-900">
+                      — {siteConfig.founder.name}
                     </p>
+                    <p className="text-sm font-medium text-ink-600">{siteConfig.founder.role}</p>
                   </div>
 
                   {/* Natural Closing Bridge: Why we started -> Let's work together */}
-                  <div className="mt-8 flex flex-col justify-between gap-4 rounded-2xl border border-gold-500/35 bg-ivory-200/70 p-5 sm:flex-row sm:items-center">
+                  <div className="mt-8 flex flex-col justify-between gap-4 rounded-2xl border border-gold-500/35 bg-ivory-200/80 p-5 sm:flex-row sm:items-center">
                     <div>
                       <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
                         Let&apos;s Work Together
                       </p>
-                      <p className="mt-1 text-sm font-medium text-forest-900">
+                      <p className="mt-1 text-sm font-semibold text-forest-900">
                         Ready to evaluate Bihar-origin makhana for your business?
                       </p>
                     </div>
