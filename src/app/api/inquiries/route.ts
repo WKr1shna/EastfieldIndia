@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
   const emailResult = await sendInquiryNotification(storage.lead);
 
   const confirmationMessage = isSample
-    ? "Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
+    ? "Your sample request has been accepted. Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
     : isEntryLead
     ? "Thank you. Your business contact details have been saved."
     : "Thank you. Your business enquiry has been received. Our team will connect with you shortly.";

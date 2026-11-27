@@ -166,6 +166,7 @@ export function SampleRequestModal() {
       const data = (await response.json()) as {
         ok?: boolean;
         referenceId?: string;
+        sampleReferenceId?: string;
         message?: string;
         error?: string;
         fieldErrors?: Record<string, string>;
@@ -202,10 +203,10 @@ export function SampleRequestModal() {
         address: formattedAddress,
       });
       setStatus("success");
-      setReferenceId(data.referenceId || "");
+      setReferenceId(data.sampleReferenceId || data.referenceId || "");
       setServerMessage(
         data.message ||
-          "Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
+          "Your sample request has been accepted. Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
       );
       setDetails("");
       setFormStartedAt(Date.now());
@@ -266,8 +267,11 @@ export function SampleRequestModal() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-900 text-gold-400">
                 <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
               </div>
-              <h3 className="mt-4 font-serif text-2xl font-medium text-forest-900">
-                Sample Request Submitted
+              <span className="mt-3 inline-flex items-center rounded-full border border-forest-700/20 bg-forest-900/5 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-forest-800 uppercase">
+                Request Accepted · Saved
+              </span>
+              <h3 className="mt-3 font-serif text-2xl font-medium text-forest-900">
+                Sample Request Accepted
               </h3>
               {referenceId && (
                 <p className="mt-2 inline-block rounded-full bg-ivory-200 px-3.5 py-1 font-mono text-xs font-semibold text-forest-900">

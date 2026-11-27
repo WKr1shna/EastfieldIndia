@@ -108,7 +108,8 @@ describe("SampleRequestModal structured address & summary", () => {
     fireEvent.click(screen.getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Sample Request Submitted/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sample Request Accepted/i)).toBeInTheDocument();
+      expect(screen.getByText(/Request Accepted · Saved/i)).toBeInTheDocument();
     });
 
     const sentBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body)) as {
