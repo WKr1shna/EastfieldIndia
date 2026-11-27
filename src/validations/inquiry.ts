@@ -10,6 +10,16 @@ export const SAMPLE_GRADES = [
   "6+ Suta",
 ] as const;
 
+export const SAMPLE_GRADE_VALUES = [
+  ...SAMPLE_GRADES,
+  "4",
+  "4+",
+  "5",
+  "5+",
+  "6",
+  "6+",
+] as const;
+
 export const SAMPLE_PRODUCT_TYPES = ["Regular", "Handpicked"] as const;
 
 export const ENQUIRY_TYPES = ["entry_lead", "enquiry", "sample"] as const;
@@ -120,6 +130,12 @@ export const entryLeadSchema = z.object({
 export const generalEnquirySchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("enquiry"),
+  subject: z
+    .string()
+    .trim()
+    .max(200, "Subject must be 200 characters or fewer.")
+    .optional()
+    .default("General Business Enquiry"),
   details: z
     .string()
     .trim()
@@ -131,12 +147,18 @@ export const generalEnquirySchema = z.object({
 export const sampleRequestSchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("sample"),
-  desiredGrade: z.enum(SAMPLE_GRADES, {
+  desiredGrade: z.enum(SAMPLE_GRADE_VALUES, {
     message: "Please select your desired makhana grade.",
   }),
   productType: z.enum(SAMPLE_PRODUCT_TYPES, {
     message: "Please select a product type (Regular or Handpicked).",
   }),
+  quantity: z
+    .string()
+    .trim()
+    .max(120, "Quantity must be 120 characters or fewer.")
+    .optional()
+    .default(""),
   shippingAddress: shippingAddressSchema,
   details: z
     .string()

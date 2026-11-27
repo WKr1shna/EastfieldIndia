@@ -23,6 +23,8 @@ const securityHeaders = [
   },
 ];
 
+const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://eastfieldindia.com";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
@@ -36,6 +38,27 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/api/(.*)",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: allowedOrigin,
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PATCH, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization",
+          },
+          {
+            key: "Vary",
+            value: "Origin",
+          },
+        ],
       },
       {
         source: "/images/(.*)",

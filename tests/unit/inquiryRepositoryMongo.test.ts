@@ -1,62 +1,154 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { StoredLead } from "@/services/inquiryRepository";
+import {
+  AdminUserModel,
+  ContactInquiryModel,
+  LeadModel,
+  ProductModel,
+  SampleRequestModel,
+  hashAdminPassword,
+  normalizeSampleGradeCode,
+  verifyAdminPassword,
+} from "@/models";
 
-const store: Array<StoredLead & { _id: string }> = [];
+const mockLeads: Array<Record<string, unknown>> = [];
+const mockSamples: Array<Record<string, unknown>> = [];
+const mockInquiries: Array<Record<string, unknown>> = [];
 
-const mockCollection = {
-  findOne: vi.fn(async (query: { $or?: Array<{ id?: string; email?: string }> }) => {
-    const clauses = query.$or ?? [];
-    const hit = store.find((doc) =>
-      clauses.some(
-        (c) => (c.id && doc.id === c.id) || (c.email && doc.email === c.email)
-      )
-    );
-    return hit ? { ...hit } : null;
-  }),
-  insertOne: vi.fn(async (doc: StoredLead) => {
-    store.push({ ...doc, _id: `mock_${store.length + 1}` });
-    return { acknowledged: true };
-  }),
-  updateOne: vi.fn(async (filter: { id: string }, update: { $set: StoredLead }) => {
-    const idx = store.findIndex((doc) => doc.id === filter.id);
-    if (idx !== -1) {
-      store[idx] = { ...update.$set, _id: store[idx]._id };
-    }
-    return { acknowledged: true, matchedCount: idx !== -1 ? 1 : 0 };
-  }),
-  find: vi.fn((query: { requestedSample?: boolean; submittedAt?: { $gte?: string; $lte?: string } }) => {
-    const filtered = store.filter((doc) => {
-      if (typeof query.requestedSample === "boolean" && doc.requestedSample !== query.requestedSample) {
-        return false;
-      }
-      if (query.submittedAt?.$gte && doc.submittedAt < query.submittedAt.$gte) return false;
-      if (query.submittedAt?.$lte && doc.submittedAt > query.submittedAt.$lte) return false;
-      return true;
-    });
-    return {
-      sort: vi.fn((sortSpec: { submittedAt: number }) => ({
-        toArray: vi.fn(async () =>
-          [...filtered].sort((a, b) =>
-            sortSpec.submittedAt === -1
-              ? b.submittedAt.localeCompare(a.submittedAt)
-              : a.submittedAt.localeCompare(b.submittedAt)
-          )
-        ),
-      })),
-    };
-  }),
-};
-
-vi.mock("@/services/mongodb", () => ({
+vi.mock("@/services/mongoose", () => ({
   isMongoConfigured: () => Boolean(process.env.MONGODB_URI),
-  getMongoLeadsCollection: async () => mockCollection,
+  connectToDatabase: async () => ({ connection: { readyState: 1 } }),
 }));
 
-describe("inquiryRepository with MongoDB", () => {
+vi.mock("@/models", async () => {
+  const actual = await vi.importActual<typeof import("@/models")>("@/models");
+  return {
+    ...actual,
+    LeadModel: {
+      schema: actual.LeadModel.schema,
+      findOne: vi.fn(async (query: { $or?: Array<{ leadId?: string; email?: string }> }) => {
+        const clauses = query.$or ?? [];
+        const found = mockLeads.find((doc) =>
+          clauses.some(
+            (c) => (c.leadId && doc.leadId === c.leadId) || (c.email && doc.email === c.email)
+          )
+        );
+        if (!found) return null;
+        return {
+          ...found,
+          save: async function save(this: Record<string, unknown>) {
+            const idx = mockLeads.findIndex((d) => d._id === this._id);
+            this.updatedAt = new Date();
+            if (idx !== -1) mockLeads[idx] = { ...this };
+            return mockLeads[idx];
+          },
+        };
+      }),
+      create: vi.fn(async (doc: Record<string, unknown>) => {
+        const now = new Date();
+        const created = {
+          ...doc,
+          _id: `lead_${mockLeads.length + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        mockLeads.push(created);
+        return created;
+      }),
+      countDocuments: vi.fn(async () => mockLeads.length),
+      find: vi.fn(() => ({
+        sort: () => ({
+          skip: () => ({
+            limit: () => ({
+              lean: async () => [...mockLeads],
+            }),
+          }),
+        }),
+      })),
+    },
+    SampleRequestModel: {
+      schema: actual.SampleRequestModel.schema,
+      findOne: vi.fn(async (query: Record<string, unknown>) => {
+        return (
+          mockSamples.find(
+            (s) =>
+              s.email === query.email &&
+              s.desiredGrade === query.desiredGrade &&
+              s.productType === query.productType
+          ) ?? null
+        );
+      }),
+      create: vi.fn(async (doc: Record<string, unknown>) => {
+        const now = new Date();
+        const created = {
+          ...doc,
+          _id: `sample_${mockSamples.length + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        mockSamples.push(created);
+        return created;
+      }),
+      find: vi.fn(() => ({
+        select: () => ({
+          sort: () => ({
+            skip: () => ({
+              limit: () => ({
+                lean: async () => [...mockSamples],
+              }),
+            }),
+          }),
+        }),
+        sort: () => ({
+          lean: async () => [...mockSamples],
+        }),
+      })),
+      countDocuments: vi.fn(async () => mockSamples.length),
+      findOneAndUpdate: vi.fn(
+        async (filter: { referenceId: string }, update: { $set: { status: string } }) => {
+          const hit = mockSamples.find((s) => s.referenceId === filter.referenceId);
+          if (!hit) return null;
+          hit.status = update.$set.status;
+          return { select: () => ({ lean: async () => hit }) };
+        }
+      ),
+    },
+    ContactInquiryModel: {
+      schema: actual.ContactInquiryModel.schema,
+      findOne: vi.fn(async () => null),
+      create: vi.fn(async (doc: Record<string, unknown>) => {
+        const now = new Date();
+        const created = {
+          ...doc,
+          _id: `inq_${mockInquiries.length + 1}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        mockInquiries.push(created);
+        return created;
+      }),
+      countDocuments: vi.fn(async () => mockInquiries.length),
+      find: vi.fn(() => ({
+        select: () => ({
+          sort: () => ({
+            skip: () => ({
+              limit: () => ({
+                lean: async () => [...mockInquiries],
+              }),
+            }),
+          }),
+        }),
+      })),
+    },
+  };
+});
+
+describe("Mongoose schemas, indexes, password hashing, and repository persistence", () => {
   const prevUri = process.env.MONGODB_URI;
 
   beforeEach(() => {
-    store.length = 0;
+    mockLeads.length = 0;
+    mockSamples.length = 0;
+    mockInquiries.length = 0;
     vi.clearAllMocks();
     process.env.MONGODB_URI = "mongodb+srv://user:pass@cluster0.example.mongodb.net/eastfield";
   });
@@ -69,10 +161,30 @@ describe("inquiryRepository with MongoDB", () => {
     }
   });
 
-  it("persists, deduplicates by email/id, and queries leads in MongoDB without returning _id", async () => {
-    const { upsertLeadRecord, queryLeadRecords } = await import("@/services/inquiryRepository");
+  it("defines schemas and indexes across Lead, SampleRequest, ContactInquiry, Product, and AdminUser", () => {
+    expect(LeadModel.schema.indexes().length).toBeGreaterThanOrEqual(5);
+    expect(SampleRequestModel.schema.indexes().length).toBeGreaterThanOrEqual(6);
+    expect(ContactInquiryModel.schema.indexes().length).toBeGreaterThanOrEqual(4);
+    expect(ProductModel.schema.indexes().length).toBeGreaterThanOrEqual(3);
+    expect(AdminUserModel.schema.indexes().length).toBeGreaterThanOrEqual(2);
 
-    const baseLead: StoredLead = {
+    expect(normalizeSampleGradeCode("4 Suta")).toBe("4");
+    expect(normalizeSampleGradeCode("5+ Suta")).toBe("5+");
+    expect(normalizeSampleGradeCode("6+")).toBe("6+");
+    expect(() => normalizeSampleGradeCode("7 Suta")).toThrow();
+  });
+
+  it("hashes and verifies AdminUser passwords securely via bcrypt", async () => {
+    const hash = await hashAdminPassword("EastField#Secure2026");
+    expect(hash).not.toContain("EastField#Secure2026");
+    expect(await verifyAdminPassword("EastField#Secure2026", hash)).toBe(true);
+    expect(await verifyAdminPassword("WrongPassword", hash)).toBe(false);
+  });
+
+  it("deduplicates Lead by email, creates linked SampleRequest and ContactInquiry, and queries paginated leads", async () => {
+    const { upsertLeadRecord, queryPaginatedLeads } = await import("@/services/inquiryRepository");
+
+    const baseLead = {
       id: "EF-20261127-MONGO1",
       visitorId: "v_abc",
       name: "Rohan Verma",
@@ -81,7 +193,7 @@ describe("inquiryRepository with MongoDB", () => {
       email: "Rohan@DeccanFoods.com",
       firstVisitAt: "2026-11-27T04:00:00.000Z",
       latestVisitAt: "2026-11-27T04:00:00.000Z",
-      leadSource: "entry_popup",
+      leadSource: "entry_popup" as const,
       skippedInitial: false,
       submittedDetails: true,
       requestedSample: false,
@@ -96,7 +208,7 @@ describe("inquiryRepository with MongoDB", () => {
     expect(first.persisted).toBe(true);
     expect(first.deduplicated).toBe(false);
     expect(first.channel).toBe("mongodb");
-    expect(store).toHaveLength(1);
+    expect(mockLeads).toHaveLength(1);
 
     const second = await upsertLeadRecord({
       ...baseLead,
@@ -106,6 +218,7 @@ describe("inquiryRepository with MongoDB", () => {
       sampleDetails: {
         desiredGrade: "6 Suta",
         productType: "Handpicked",
+        quantity: "500 kg",
         shippingAddress: {
           addressLine1: "42 MG Road",
           addressLine2: "",
@@ -121,13 +234,27 @@ describe("inquiryRepository with MongoDB", () => {
 
     expect(second.persisted).toBe(true);
     expect(second.deduplicated).toBe(true);
-    expect(second.channel).toBe("mongodb");
     expect(second.lead.id).toBe("EF-20261127-MONGO1");
-    expect(store).toHaveLength(1);
+    expect(second.sampleReferenceId).toBe("EFS-20261127-MONGO2");
+    expect(mockLeads).toHaveLength(1);
+    expect(mockSamples).toHaveLength(1);
+    expect(mockSamples[0].leadCode).toBe("EF-20261127-MONGO1");
+    expect(mockSamples[0].desiredGrade).toBe("6");
+    expect(mockSamples[0].productType).toBe("Handpicked");
 
-    const sampleLeads = await queryLeadRecords({ requestedSample: "true" });
-    expect(sampleLeads).toHaveLength(1);
-    expect(sampleLeads[0].sampleDetails?.desiredGrade).toBe("6 Suta");
-    expect("_id" in sampleLeads[0]).toBe(false);
+    const enquiry = await upsertLeadRecord({
+      ...baseLead,
+      id: "EF-20261127-INQ1",
+      email: "buyer@otherfirm.com",
+      leadSource: "general_enquiry",
+      additionalMessage: "Interested in 5+ Suta wholesale supply.",
+    });
+    expect(enquiry.persisted).toBe(true);
+    expect(enquiry.inquiryReferenceId).toBe("EFI-20261127-INQ1");
+    expect(mockInquiries).toHaveLength(1);
+
+    const paged = await queryPaginatedLeads({ page: 1, limit: 10 });
+    expect(paged.items.length).toBe(2);
+    expect(paged.total).toBe(2);
   });
 });

@@ -1,6 +1,17 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { getMongoLeadsCollection, isMongoConfigured } from "@/services/mongodb";
+import { MAKHANA_GRADES } from "@/features/products/grades";
+import {
+  ContactInquiryModel,
+  LeadModel,
+  ProductModel,
+  SampleRequestModel,
+  normalizeSampleGradeCode,
+  type SampleGradeCode,
+  type SampleRequestStatus,
+} from "@/models";
+import { normalizeMobileDigits, normalizeMobileDisplay } from "@/models/Lead";
+import { connectToDatabase, isMongoConfigured } from "@/services/mongoose";
 
 export interface ShippingAddressRecord {
   addressLine1: string;
@@ -13,7 +24,8 @@ export interface ShippingAddressRecord {
 
 export interface SampleDetailsRecord {
   desiredGrade: string;
-  productType: string;
+  productType: "Regular" | "Handpicked" | string;
+  quantity?: string;
   shippingAddress: ShippingAddressRecord;
   additionalRequirements: string;
 }
@@ -32,6 +44,7 @@ export interface StoredLead {
   submittedDetails: boolean;
   requestedSample: boolean;
   sampleDetails: SampleDetailsRecord | null;
+  subject?: string;
   additionalMessage: string;
   submittedAt: string;
   updatedAt: string;
@@ -42,6 +55,8 @@ export interface StorageOutcome {
   persisted: boolean;
   deduplicated: boolean;
   lead: StoredLead;
+  sampleReferenceId?: string;
+  inquiryReferenceId?: string;
   channel: "mongodb" | "webhook" | "file" | "ephemeral";
 }
 
@@ -50,6 +65,24 @@ function getStoragePath(): string {
     return process.env.INQUIRY_STORAGE_PATH;
   }
   return path.join(process.cwd(), ".data", "leads.ndjson");
+}
+
+function mapLeadSourceToDb(
+  source: StoredLead["leadSource"],
+  requestedSample: boolean
+): "popup" | "sample_gate" | "sample_request" | "contact_form" {
+  if (source === "entry_popup") return "popup";
+  if (source === "sample_gate") return "sample_gate";
+  if (requestedSample) return "sample_request";
+  return "contact_form";
+}
+
+function mapDbSourceToLegacy(
+  source: string
+): "entry_popup" | "sample_gate" | "general_enquiry" {
+  if (source === "popup") return "entry_popup";
+  if (source === "sample_gate") return "sample_gate";
+  return "general_enquiry";
 }
 
 function mergeLeadRecord(prev: StoredLead, incoming: StoredLead): StoredLead {
@@ -68,12 +101,6 @@ function mergeLeadRecord(prev: StoredLead, incoming: StoredLead): StoredLead {
     updatedAt: incoming.updatedAt,
     sourceIpHash: incoming.sourceIpHash,
   };
-}
-
-function stripMongoId(doc: StoredLead & { _id?: unknown }): StoredLead {
-  const { _id, ...rest } = doc;
-  void _id;
-  return rest;
 }
 
 async function readLocalLeads(): Promise<StoredLead[]> {
@@ -118,44 +145,173 @@ async function forwardWebhook(lead: StoredLead): Promise<boolean> {
 }
 
 export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOutcome> {
-  const normalizedEmail = incoming.email.toLowerCase();
+  const normalizedEmail = incoming.email.trim().toLowerCase();
+  const displayMobile = normalizeMobileDisplay(incoming.phone);
+  const mobileNormalized = normalizeMobileDigits(incoming.phone);
 
-  // 1. Primary durable database: MongoDB Atlas (when MONGODB_URI is configured)
+  // 1. Primary durable database via Mongoose models (Lead, SampleRequest, ContactInquiry)
   if (isMongoConfigured()) {
     try {
-      const collection = await getMongoLeadsCollection();
-      if (collection) {
-        const existing = await collection.findOne({
-          $or: [...(incoming.id ? [{ id: incoming.id }] : []), { email: normalizedEmail }],
+      const conn = await connectToDatabase();
+      if (!conn) {
+        return { persisted: false, deduplicated: false, lead: incoming, channel: "ephemeral" };
+      }
+
+      const existingLead = await LeadModel.findOne({
+        $or: [
+          ...(incoming.id ? [{ leadId: incoming.id }] : []),
+          { email: normalizedEmail },
+        ],
+      });
+
+      let leadDoc = existingLead;
+      let deduplicated = false;
+
+      if (existingLead) {
+        deduplicated = true;
+        existingLead.fullName = incoming.name || existingLead.fullName;
+        existingLead.mobile = displayMobile || existingLead.mobile;
+        existingLead.mobileNormalized = mobileNormalized || existingLead.mobileNormalized;
+        existingLead.companyName = incoming.company || existingLead.companyName;
+        existingLead.visitorId = incoming.visitorId || existingLead.visitorId;
+        existingLead.latestVisitAt = incoming.latestVisitAt || incoming.updatedAt;
+        existingLead.skippedInitial = existingLead.skippedInitial || incoming.skippedInitial;
+        existingLead.sourceIpHash = incoming.sourceIpHash || existingLead.sourceIpHash;
+        if (incoming.requestedSample && existingLead.status === "new") {
+          existingLead.status = "qualified";
+        }
+        leadDoc = await existingLead.save();
+      } else {
+        leadDoc = await LeadModel.create({
+          leadId: incoming.id,
+          fullName: incoming.name,
+          mobile: displayMobile,
+          mobileNormalized,
+          companyName: incoming.company,
+          email: normalizedEmail,
+          source: mapLeadSourceToDb(incoming.leadSource, incoming.requestedSample),
+          status: incoming.requestedSample ? "qualified" : "new",
+          visitorId: incoming.visitorId,
+          firstVisitAt: incoming.firstVisitAt,
+          latestVisitAt: incoming.latestVisitAt,
+          skippedInitial: incoming.skippedInitial,
+          sourceIpHash: incoming.sourceIpHash,
+        });
+      }
+
+      let sampleReferenceId: string | undefined;
+      let inquiryReferenceId: string | undefined;
+      const dedupeWindowStart = new Date(Date.now() - 60 * 1000);
+
+      if (incoming.requestedSample && incoming.sampleDetails) {
+        const gradeCode = normalizeSampleGradeCode(incoming.sampleDetails.desiredGrade);
+        const rawProductType = incoming.sampleDetails.productType;
+        if (rawProductType !== "Regular" && rawProductType !== "Handpicked") {
+          throw new Error(`Invalid product type: ${rawProductType}`);
+        }
+        const productType: "Regular" | "Handpicked" = rawProductType;
+
+        const recentDuplicate = await SampleRequestModel.findOne({
+          email: normalizedEmail,
+          desiredGrade: gradeCode,
+          productType,
+          "shippingAddress.addressLine1": incoming.sampleDetails.shippingAddress.addressLine1,
+          createdAt: { $gte: dedupeWindowStart },
         });
 
-        let savedLead = { ...incoming, email: normalizedEmail };
-        let deduplicated = false;
-
-        if (existing) {
+        if (recentDuplicate) {
+          sampleReferenceId = recentDuplicate.referenceId;
           deduplicated = true;
-          savedLead = mergeLeadRecord(stripMongoId(existing), savedLead);
-          await collection.updateOne({ id: existing.id }, { $set: savedLead });
         } else {
-          await collection.insertOne({ ...savedLead });
+          const sampleRef = `EFS-${incoming.id.replace(/^EF-/, "")}`;
+          const createdSample = await SampleRequestModel.create({
+            referenceId: sampleRef,
+            leadId: leadDoc._id,
+            leadCode: leadDoc.leadId,
+            fullName: leadDoc.fullName,
+            mobile: leadDoc.mobile,
+            companyName: leadDoc.companyName,
+            email: normalizedEmail,
+            desiredGrade: gradeCode,
+            productType,
+            quantity: incoming.sampleDetails.quantity || "",
+            additionalRequirements: incoming.sampleDetails.additionalRequirements || "",
+            shippingAddress: incoming.sampleDetails.shippingAddress,
+            status: "pending",
+            sourceIpHash: incoming.sourceIpHash,
+          });
+          sampleReferenceId = createdSample.referenceId;
         }
+      } else if (incoming.leadSource === "general_enquiry") {
+        const recentDuplicate = await ContactInquiryModel.findOne({
+          email: normalizedEmail,
+          message: incoming.additionalMessage || "",
+          createdAt: { $gte: dedupeWindowStart },
+        });
 
-        // Non-blocking optional CRM/Slack webhook forward if also configured
-        await forwardWebhook(savedLead);
-
-        return { persisted: true, deduplicated, lead: savedLead, channel: "mongodb" };
+        if (recentDuplicate) {
+          inquiryReferenceId = recentDuplicate.referenceId;
+          deduplicated = true;
+        } else {
+          const inquiryRef = `EFI-${incoming.id.replace(/^EF-/, "")}`;
+          const createdInquiry = await ContactInquiryModel.create({
+            referenceId: inquiryRef,
+            leadId: leadDoc._id,
+            leadCode: leadDoc.leadId,
+            name: leadDoc.fullName,
+            email: normalizedEmail,
+            mobile: leadDoc.mobile,
+            companyName: leadDoc.companyName,
+            subject: incoming.subject || "General Business Enquiry",
+            message: incoming.additionalMessage || "",
+            source: "contact_form",
+            status: "new",
+            sourceIpHash: incoming.sourceIpHash,
+          });
+          inquiryReferenceId = createdInquiry.referenceId;
+        }
       }
+
+      const savedLead: StoredLead = {
+        ...incoming,
+        id: leadDoc.leadId,
+        name: leadDoc.fullName,
+        phone: leadDoc.mobile,
+        company: leadDoc.companyName,
+        email: leadDoc.email,
+        requestedSample: Boolean(incoming.requestedSample || sampleReferenceId),
+        submittedAt:
+          leadDoc.createdAt instanceof Date
+            ? leadDoc.createdAt.toISOString()
+            : incoming.submittedAt,
+        updatedAt:
+          leadDoc.updatedAt instanceof Date
+            ? leadDoc.updatedAt.toISOString()
+            : incoming.updatedAt,
+      };
+
+      await forwardWebhook(savedLead);
+
+      return {
+        persisted: true,
+        deduplicated,
+        lead: savedLead,
+        sampleReferenceId,
+        inquiryReferenceId,
+        channel: "mongodb",
+      };
     } catch {
-      // Fall through to secondary storage channels if MongoDB is temporarily unreachable
+      // Strict integrity: when MONGODB_URI is configured and fails, report failure rather than faking success
+      return { persisted: false, deduplicated: false, lead: incoming, channel: "ephemeral" };
     }
   }
 
-  // 2. Webhook-only fallback when configured without MongoDB
+  // 2. Webhook-only persistence when MongoDB is not configured
   if (await forwardWebhook(incoming)) {
     return { persisted: true, deduplicated: false, lead: incoming, channel: "webhook" };
   }
 
-  // 3. Local NDJSON file storage fallback
+  // 3. Local NDJSON file storage fallback (for local development / file-mode tests without MongoDB)
   try {
     const existing = await readLocalLeads();
     const matchIndex = existing.findIndex(
@@ -186,34 +342,115 @@ export interface LeadQueryFilters {
   dateFrom?: string;
   dateTo?: string;
   requestedSample?: "true" | "false";
+  status?: string;
+  page?: number;
+  limit?: number;
 }
 
-export async function queryLeadRecords(filters: LeadQueryFilters = {}): Promise<StoredLead[]> {
-  if (isMongoConfigured()) {
-    try {
-      const collection = await getMongoLeadsCollection();
-      if (collection) {
-        const query: Record<string, unknown> = {};
-        if (filters.requestedSample === "true") query.requestedSample = true;
-        if (filters.requestedSample === "false") query.requestedSample = false;
-        if (filters.dateFrom || filters.dateTo) {
-          const submittedAtRange: Record<string, string> = {};
-          if (filters.dateFrom) submittedAtRange.$gte = filters.dateFrom;
-          if (filters.dateTo) submittedAtRange.$lte = filters.dateTo;
-          query.submittedAt = submittedAtRange;
-        }
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-        const docs = await collection.find(query).sort({ submittedAt: -1 }).toArray();
-        return docs.map(stripMongoId);
-      }
-    } catch {
-      // Fall through to local file query
+export async function queryPaginatedLeads(
+  filters: LeadQueryFilters = {}
+): Promise<PaginatedResult<StoredLead>> {
+  const page = Math.max(1, Number(filters.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit || 25)));
+
+  if (isMongoConfigured()) {
+    await connectToDatabase();
+
+    const query: Record<string, unknown> = {};
+    if (filters.status) query.status = filters.status;
+    if (filters.requestedSample === "true") query.status = "qualified";
+    if (filters.dateFrom || filters.dateTo) {
+      const range: Record<string, Date> = {};
+      if (filters.dateFrom) range.$gte = new Date(filters.dateFrom);
+      if (filters.dateTo) range.$lte = new Date(filters.dateTo);
+      query.createdAt = range;
     }
+
+    const total = await LeadModel.countDocuments(query);
+    const docs = await LeadModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const emails = docs.map((d) => d.email);
+    const sampleDocs =
+      emails.length > 0
+        ? await SampleRequestModel.find({ email: { $in: emails } })
+            .sort({ createdAt: -1 })
+            .lean()
+        : [];
+
+    const latestSampleByEmail = new Map<string, (typeof sampleDocs)[number]>();
+    for (const s of sampleDocs) {
+      if (!latestSampleByEmail.has(s.email)) {
+        latestSampleByEmail.set(s.email, s);
+      }
+    }
+
+    let items: StoredLead[] = docs.map((doc) => {
+      const sample = latestSampleByEmail.get(doc.email);
+      return {
+        id: doc.leadId,
+        visitorId: doc.visitorId || "",
+        name: doc.fullName,
+        phone: doc.mobile,
+        company: doc.companyName,
+        email: doc.email,
+        firstVisitAt: doc.firstVisitAt || "",
+        latestVisitAt: doc.latestVisitAt || "",
+        leadSource: mapDbSourceToLegacy(doc.source),
+        skippedInitial: Boolean(doc.skippedInitial),
+        submittedDetails: true,
+        requestedSample: Boolean(sample),
+        sampleDetails: sample
+          ? {
+              desiredGrade: sample.desiredGrade,
+              productType: sample.productType,
+              quantity: sample.quantity || "",
+              shippingAddress: {
+                addressLine1: sample.shippingAddress.addressLine1,
+                addressLine2: sample.shippingAddress.addressLine2 || "",
+                city: sample.shippingAddress.city,
+                state: sample.shippingAddress.state,
+                postalCode: sample.shippingAddress.postalCode,
+                country: sample.shippingAddress.country,
+              },
+              additionalRequirements: sample.additionalRequirements || "",
+            }
+          : null,
+        additionalMessage: "",
+        submittedAt:
+          doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt:
+          doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : new Date().toISOString(),
+        sourceIpHash: "",
+      };
+    });
+
+    if (filters.requestedSample === "false") {
+      items = items.filter((item) => !item.requestedSample);
+    }
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   const leads = await readLocalLeads();
-
-  return leads
+  const filtered = leads
     .filter((lead) => {
       if (filters.requestedSample === "true" && !lead.requestedSample) return false;
       if (filters.requestedSample === "false" && lead.requestedSample) return false;
@@ -222,6 +459,150 @@ export async function queryLeadRecords(filters: LeadQueryFilters = {}): Promise<
       return true;
     })
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+
+  const start = (page - 1) * limit;
+  return {
+    items: filtered.slice(start, start + limit),
+    total: filtered.length,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
+  };
+}
+
+export async function queryLeadRecords(filters: LeadQueryFilters = {}): Promise<StoredLead[]> {
+  const result = await queryPaginatedLeads({ ...filters, page: 1, limit: filters.limit ?? 100 });
+  return result.items;
+}
+
+export interface SampleRequestQueryFilters {
+  status?: SampleRequestStatus;
+  desiredGrade?: SampleGradeCode;
+  productType?: "Regular" | "Handpicked";
+  country?: string;
+  page?: number;
+  limit?: number;
+}
+
+export async function queryPaginatedSampleRequests(filters: SampleRequestQueryFilters = {}) {
+  const page = Math.max(1, Number(filters.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit || 25)));
+
+  await connectToDatabase();
+  const query: Record<string, unknown> = {};
+  if (filters.status) query.status = filters.status;
+  if (filters.desiredGrade) query.desiredGrade = filters.desiredGrade;
+  if (filters.productType) query.productType = filters.productType;
+  if (filters.country) query["shippingAddress.country"] = filters.country;
+
+  const [total, items] = await Promise.all([
+    SampleRequestModel.countDocuments(query),
+    SampleRequestModel.find(query)
+      .select("-sourceIpHash")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+  ]);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
+export async function updateSampleRequestStatus(
+  referenceId: string,
+  status: SampleRequestStatus
+) {
+  await connectToDatabase();
+  return SampleRequestModel.findOneAndUpdate(
+    { referenceId },
+    { $set: { status } },
+    { new: true, runValidators: true }
+  )
+    .select("-sourceIpHash")
+    .lean();
+}
+
+export async function queryPaginatedContactInquiries(filters: {
+  status?: string;
+  page?: number;
+  limit?: number;
+} = {}) {
+  const page = Math.max(1, Number(filters.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit || 25)));
+
+  await connectToDatabase();
+  const query: Record<string, unknown> = {};
+  if (filters.status) query.status = filters.status;
+
+  const [total, items] = await Promise.all([
+    ContactInquiryModel.countDocuments(query),
+    ContactInquiryModel.find(query)
+      .select("-sourceIpHash")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+  ]);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
+/**
+ * Idempotently syncs the website's verified grade lineup into the `products` collection
+ * without inventing specs or stock numbers.
+ */
+export async function syncProductCatalog() {
+  await connectToDatabase();
+
+  const gradeMap: Record<string, "4" | "4+" | "5" | "5+" | "6" | "6+" | "custom"> = {
+    "4-suta": "4",
+    "5-suta": "5",
+    "6-suta": "6",
+    "6-plus-suta": "6+",
+    custom: "custom",
+  };
+
+  const operations = MAKHANA_GRADES.map((grade, index) => ({
+    updateOne: {
+      filter: { slug: grade.id },
+      update: {
+        $set: {
+          slug: grade.id,
+          name: grade.name,
+          grade: gradeMap[grade.id] ?? "custom",
+          productTypes: ["Regular", "Handpicked"],
+          shortLabel: grade.shortLabel,
+          description: grade.useCase,
+          specifications: {
+            sizingContext: grade.sizingContext,
+            packagingContext: grade.packagingContext,
+            originRegion: "Purnea & Katihar, Bihar",
+            productNature: "Guilt-Free · Gluten-Free",
+          },
+          image: grade.image,
+          imageAlt: grade.imageAlt,
+          isActive: true,
+          displayOrder: index + 1,
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  await ProductModel.bulkWrite(operations);
+  return ProductModel.find({ isActive: true }).sort({ displayOrder: 1 }).lean();
 }
 
 function escapeCsvCell(value: string | boolean): string {

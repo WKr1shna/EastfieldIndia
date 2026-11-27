@@ -47,6 +47,7 @@ export function InquiryFormSection() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "submitting") return;
     setServerMessage("");
 
     const payload = {

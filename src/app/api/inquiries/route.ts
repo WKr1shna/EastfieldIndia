@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
       ? {
           desiredGrade: data.desiredGrade,
           productType: data.productType,
+          quantity: sanitizeText(data.quantity || ""),
           shippingAddress: {
             addressLine1: sanitizeText(data.shippingAddress.addressLine1),
             addressLine2: sanitizeText(data.shippingAddress.addressLine2 || ""),
@@ -127,6 +128,10 @@ export async function POST(request: NextRequest) {
           additionalRequirements: sanitizeText(data.details || ""),
         }
       : null,
+    subject:
+      data.requestType === "enquiry"
+        ? sanitizeText(data.subject || "General Business Enquiry")
+        : undefined,
     additionalMessage: !isSample ? sanitizeText(data.details || "") : "",
     submittedAt: nowIso,
     updatedAt: nowIso,
@@ -134,6 +139,16 @@ export async function POST(request: NextRequest) {
   };
 
   const storage = await upsertLeadRecord(incomingLead);
+  if (!storage.persisted) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "We could not save your submission right now. Please try again shortly.",
+      },
+      { status: 503, headers: rateHeaders }
+    );
+  }
+
   const emailResult = await sendInquiryNotification(storage.lead);
 
   const confirmationMessage = isSample
@@ -146,6 +161,8 @@ export async function POST(request: NextRequest) {
     {
       ok: true,
       referenceId: storage.lead.id,
+      ...(storage.sampleReferenceId ? { sampleReferenceId: storage.sampleReferenceId } : {}),
+      ...(storage.inquiryReferenceId ? { inquiryReferenceId: storage.inquiryReferenceId } : {}),
       deduplicated: storage.deduplicated,
       message: confirmationMessage,
       lead: {

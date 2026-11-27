@@ -72,6 +72,7 @@ export function WelcomeLeadModal() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "submitting") return;
     setServerMessage("");
 
     const payload = {
