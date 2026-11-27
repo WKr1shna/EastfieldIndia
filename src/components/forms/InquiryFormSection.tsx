@@ -5,7 +5,6 @@ import {
   AlertCircle,
   ArrowUpRight,
   Building,
-  CheckCircle2,
   Loader2,
   PackageCheck,
   Send,
@@ -16,8 +15,14 @@ import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { Reveal } from "@/components/ui/Reveal";
 
 export function InquiryFormSection() {
-  const { visitorState, savedContact, hasSavedContact, saveContact, openSampleRequest } =
-    useInquiryPreset();
+  const {
+    visitorState,
+    savedContact,
+    hasSavedContact,
+    saveContact,
+    openSampleRequest,
+    showSubmissionSuccess,
+  } = useInquiryPreset();
 
   const [company, setCompany] = useState("");
   const [name, setName] = useState("");
@@ -27,9 +32,8 @@ export function InquiryFormSection() {
   const [website, setWebsite] = useState("");
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [serverMessage, setServerMessage] = useState("");
-  const [referenceId, setReferenceId] = useState("");
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -103,12 +107,14 @@ export function InquiryFormSection() {
       const data = (await response.json()) as {
         ok?: boolean;
         referenceId?: string;
+        inquiryReferenceId?: string;
         message?: string;
         error?: string;
         fieldErrors?: Record<string, string>;
+        delivery?: { persisted?: boolean };
       };
 
-      if (!response.ok || !data.ok) {
+      if (!response.ok || !data.ok || data.delivery?.persisted === false) {
         if (data.fieldErrors) setFieldErrors(data.fieldErrors);
         setStatus("error");
         setServerMessage(data.error || "Unable to submit your enquiry right now.");
@@ -116,13 +122,18 @@ export function InquiryFormSection() {
       }
 
       saveContact({ leadId: data.referenceId || "", company, name, phone, email });
-      setStatus("success");
-      setReferenceId(data.referenceId || "");
-      setServerMessage(
-        data.message || "Thank you. Your business enquiry has been received."
-      );
+      setStatus("idle");
       setDetails("");
       setFormStartedAt(Date.now());
+      showSubmissionSuccess({
+        variant: "general_enquiry",
+        title: "Submission Successful!",
+        message:
+          "Thank you for reaching out to EastField India. We've received your details and will get back to you shortly.",
+        badgeLabel: "Enquiry Received · Saved",
+        referenceId: data.inquiryReferenceId || data.referenceId || "",
+        primaryButtonLabel: "Done",
+      });
     } catch {
       setStatus("error");
       setServerMessage("A network error occurred. Please check your connection and try again.");
@@ -232,50 +243,7 @@ export function InquiryFormSection() {
                   </h3>
                 </div>
 
-                {status === "success" ? (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    className="rounded-2xl border border-forest-700/25 bg-white p-8 text-center"
-                  >
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-900 text-gold-400">
-                      <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                    <h4 className="mt-4 font-serif text-2xl font-medium text-forest-900">
-                      Enquiry Received
-                    </h4>
-                    {referenceId && (
-                      <p className="mt-2 inline-block rounded-full bg-ivory-200 px-3.5 py-1 font-mono text-xs font-semibold text-forest-900">
-                        Reference: {referenceId}
-                      </p>
-                    )}
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-600">
-                      {serverMessage}
-                    </p>
-                    <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => openSampleRequest()}
-                        className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-5 py-2.5 text-xs font-bold tracking-wider text-forest-950 uppercase transition-colors hover:bg-gold-400"
-                      >
-                        <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span>Need a Sample? Request Now</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStatus("idle");
-                          setReferenceId("");
-                          setServerMessage("");
-                        }}
-                        className="rounded-full border border-forest-800/25 bg-ivory-50 px-5 py-2.5 text-xs font-semibold tracking-wider text-forest-900 uppercase transition-colors hover:bg-ivory-200"
-                      >
-                        Send Another Note
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} noValidate aria-label="General Business Enquiry Form">
+                <form onSubmit={handleSubmit} noValidate aria-label="General Business Enquiry Form">
                     <div className="sr-only" aria-hidden="true">
                       <label htmlFor="website">Leave this field blank</label>
                       <input
@@ -477,7 +445,6 @@ export function InquiryFormSection() {
                       </button>
                     </div>
                   </form>
-                )}
               </div>
             </Reveal>
           </div>

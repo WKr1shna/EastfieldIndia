@@ -79,9 +79,12 @@ describe("InquiryFormSection (minimal 4-field General Business Enquiry)", () => 
     fireEvent.click(screen.getByRole("button", { name: /Submit Enquiry/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Enquiry Received/i)).toBeInTheDocument();
+      expect(screen.getByText(/Submission Successful!/i)).toBeInTheDocument();
       expect(screen.getByText(/EF-20261127-LEAD01/)).toBeInTheDocument();
     });
+
+    fireEvent.click(screen.getByRole("button", { name: /^Done$/i }));
+    expect(screen.queryByText(/Submission Successful!/i)).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem("eastfield_visitor_lead_v1")).toContain("Verma Foods");
   });

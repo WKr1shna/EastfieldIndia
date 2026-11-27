@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Edit3, Loader2, PackageCheck, Send, X } from "lucide-react";
+import { AlertCircle, Edit3, Loader2, PackageCheck, Send, X } from "lucide-react";
 import {
   SAMPLE_GRADES,
   SAMPLE_PRODUCT_TYPES,
@@ -24,6 +24,7 @@ export function SampleRequestModal() {
     setSelectedGrade,
     saveContact,
     closeSampleModal,
+    showSubmissionSuccess,
   } = useInquiryPreset();
 
   const [name, setName] = useState("");
@@ -46,24 +47,21 @@ export function SampleRequestModal() {
   const [editingSaved, setEditingSaved] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [serverMessage, setServerMessage] = useState("");
-  const [referenceId, setReferenceId] = useState("");
-  const [submittedSummary, setSubmittedSummary] = useState<{
-    grade: string;
-    productType: string;
-    address: string;
-  } | null>(null);
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
   useEffect(() => {
-    if (!isSampleModalOpen) return;
+    if (!isSampleModalOpen) {
+      const resetRaf = window.requestAnimationFrame(() => {
+        setStatus("idle");
+        setServerMessage("");
+        setFieldErrors({});
+      });
+      return () => window.cancelAnimationFrame(resetRaf);
+    }
     const raf = window.requestAnimationFrame(() => {
       setFormStartedAt(Date.now());
-      setStatus("idle");
-      setServerMessage("");
-      setFieldErrors({});
-      setSubmittedSummary(null);
       if (hasSavedContact) {
         setName(savedContact.name);
         setPhone(savedContact.phone);
@@ -173,9 +171,10 @@ export function SampleRequestModal() {
         message?: string;
         error?: string;
         fieldErrors?: Record<string, string>;
+        delivery?: { persisted?: boolean };
       };
 
-      if (!response.ok || !data.ok) {
+      if (!response.ok || !data.ok || data.delivery?.persisted === false) {
         if (data.fieldErrors) setFieldErrors(data.fieldErrors);
         setStatus("error");
         setServerMessage(data.error || "Unable to submit your sample request right now.");
@@ -200,19 +199,29 @@ export function SampleRequestModal() {
         .filter(Boolean)
         .join(", ");
 
-      setSubmittedSummary({
-        grade: selectedGrade,
-        productType,
-        address: formattedAddress,
-      });
-      setStatus("success");
-      setReferenceId(data.sampleReferenceId || data.referenceId || "");
-      setServerMessage(
-        data.message ||
-          "Your sample request has been accepted. Thank you for your interest in EastField India. Our team will review your request and get in touch with you."
-      );
+      const summaryItems = [
+        { label: "Grade", value: selectedGrade },
+        { label: "Product Type", value: productType },
+        ...(quantity.trim() ? [{ label: "Quantity", value: quantity.trim() }] : []),
+        { label: "Shipping To", value: formattedAddress },
+      ];
+
+      setStatus("idle");
       setDetails("");
+      setQuantity("");
       setFormStartedAt(Date.now());
+      closeSampleModal();
+      showSubmissionSuccess({
+        variant: "sample_request",
+        title: "Sample Request Received!",
+        message:
+          "Your sample request has been successfully submitted. Our team will review your requirements and contact you shortly.",
+        badgeLabel: "Request Accepted · Saved",
+        referenceId: data.sampleReferenceId || data.referenceId || "",
+        summaryTitle: "Sample Requested",
+        summaryItems,
+        primaryButtonLabel: "Done",
+      });
     } catch {
       setStatus("error");
       setServerMessage("A network error occurred. Please check your connection and try again.");
@@ -261,67 +270,7 @@ export function SampleRequestModal() {
         </div>
 
         <div className="p-5 sm:p-7">
-          {status === "success" ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="rounded-2xl border border-forest-700/20 bg-white p-7 text-center"
-            >
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-900 text-gold-400">
-                <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <span className="mt-3 inline-flex items-center rounded-full border border-forest-700/20 bg-forest-900/5 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-forest-800 uppercase">
-                Request Accepted · Saved
-              </span>
-              <h3 className="mt-3 font-serif text-2xl font-medium text-forest-900">
-                Sample Request Accepted
-              </h3>
-              {referenceId && (
-                <p className="mt-2 inline-block rounded-full bg-ivory-200 px-3.5 py-1 font-mono text-xs font-semibold text-forest-900">
-                  Reference: {referenceId}
-                </p>
-              )}
-              {submittedSummary && (
-                <div className="mx-auto mt-4 max-w-md rounded-xl border border-ivory-300 bg-ivory-50 px-4 py-3 text-left text-xs text-forest-900">
-                  <p className="font-bold tracking-wider text-gold-600 uppercase">Sample Requested</p>
-                  <p className="mt-1">Grade: {submittedSummary.grade}</p>
-                  <p className="mt-0.5">Product Type: {submittedSummary.productType}</p>
-                  <p className="mt-1.5 text-ink-600">
-                    <span className="font-semibold text-forest-900">Shipping To: </span>
-                    {submittedSummary.address}
-                  </p>
-                </div>
-              )}
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-600">
-                {serverMessage}
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatus("idle");
-                    setReferenceId("");
-                    setServerMessage("");
-                    setSubmittedSummary(null);
-                  }}
-                  className="rounded-full border border-forest-800/25 bg-ivory-50 px-5 py-2.5 text-xs font-semibold tracking-wider text-forest-900 uppercase hover:bg-ivory-200"
-                >
-                  Request Another Sample
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatus("idle");
-                    closeSampleModal();
-                  }}
-                  className="rounded-full bg-forest-900 px-6 py-2.5 text-xs font-semibold tracking-wider text-gold-400 uppercase hover:bg-forest-800"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate aria-label="Request a Sample Form">
+          <form onSubmit={handleSubmit} noValidate aria-label="Request a Sample Form">
               <div className="sr-only" aria-hidden="true">
                 <label htmlFor="modal-website">Leave blank</label>
                 <input
@@ -849,7 +798,6 @@ export function SampleRequestModal() {
                 </button>
               </div>
             </form>
-          )}
         </div>
       </div>
     </div>

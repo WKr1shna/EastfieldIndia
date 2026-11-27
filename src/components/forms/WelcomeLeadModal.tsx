@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AlertCircle, ArrowRight, CheckCircle2, Loader2, ShieldCheck, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2, ShieldCheck, X } from "lucide-react";
 import { entryLeadSchema } from "@/validations/inquiry";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
@@ -15,6 +15,7 @@ export function WelcomeLeadModal() {
     saveContact,
     closeWelcomeModal,
     completeWelcomeForSampleGate,
+    showSubmissionSuccess,
   } = useInquiryPreset();
 
   const [name, setName] = useState("");
@@ -32,15 +33,19 @@ export function WelcomeLeadModal() {
   const isSampleGate = welcomeModalMode === "sample_gate";
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      const resetRaf = window.requestAnimationFrame(() => {
+        setStatus("idle");
+        setServerMessage("");
+        setFieldErrors({});
+      });
+      return () => window.cancelAnimationFrame(resetRaf);
+    }
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const raf = window.requestAnimationFrame(() => {
       setFormStartedAt(Date.now());
-      setStatus("idle");
-      setServerMessage("");
-      setFieldErrors({});
       firstInputRef.current?.focus();
     });
 
@@ -121,9 +126,10 @@ export function WelcomeLeadModal() {
         message?: string;
         error?: string;
         fieldErrors?: Record<string, string>;
+        delivery?: { persisted?: boolean };
       };
 
-      if (!response.ok || !data.ok) {
+      if (!response.ok || !data.ok || data.delivery?.persisted === false) {
         if (data.fieldErrors) setFieldErrors(data.fieldErrors);
         setStatus("error");
         setServerMessage(data.error || "Unable to save your details right now.");
@@ -143,11 +149,16 @@ export function WelcomeLeadModal() {
         return;
       }
 
-      setStatus("success");
-      setServerMessage(data.message || "Thank you. Your business contact details have been saved.");
-      window.setTimeout(() => {
-        closeWelcomeModal(false);
-      }, 1100);
+      setStatus("idle");
+      closeWelcomeModal(false);
+      showSubmissionSuccess({
+        variant: "welcome_lead",
+        title: "Thank You!",
+        message: "Your details have been received. Welcome to EastField India.",
+        badgeLabel: "Welcome · Saved",
+        referenceId: data.referenceId,
+        primaryButtonLabel: "Continue Exploring",
+      });
     } catch {
       setStatus("error");
       setServerMessage("A network error occurred. Please check your connection and try again.");
@@ -255,21 +266,6 @@ export function WelcomeLeadModal() {
             </p>
           </div>
 
-          {status === "success" ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="mt-6 rounded-2xl border border-forest-700/20 bg-white p-7 text-center"
-            >
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-forest-900 text-gold-400">
-                <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <h3 className="mt-3 font-serif text-xl font-medium text-forest-900">
-                Thank You
-              </h3>
-              <p className="mt-1.5 text-sm text-ink-600">{serverMessage}</p>
-            </div>
-          ) : (
             <form onSubmit={handleSubmit} noValidate className="mt-5" aria-label="Welcome Lead Form">
               <div className="sr-only" aria-hidden="true">
                 <label htmlFor="welcome-website">Leave blank</label>
@@ -462,7 +458,6 @@ export function WelcomeLeadModal() {
                 </button>
               </div>
             </form>
-          )}
         </div>
       </div>
     </div>

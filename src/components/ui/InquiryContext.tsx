@@ -7,9 +7,26 @@ import {
   type SessionBusinessContact,
   type VisitorLeadState,
 } from "@/hooks/useSessionContact";
+import { SubmissionSuccessModal } from "@/components/ui/SubmissionSuccessModal";
 
 export type GradeOption = SampleGradeOption | "";
 export type WelcomeModalMode = "closed" | "entry" | "sample_gate";
+
+export interface SubmissionSuccessSummaryItem {
+  label: string;
+  value: string;
+}
+
+export interface SubmissionSuccessPayload {
+  variant: "welcome_lead" | "sample_request" | "general_enquiry";
+  title: string;
+  message: string;
+  referenceId?: string;
+  badgeLabel?: string;
+  summaryTitle?: string;
+  summaryItems?: SubmissionSuccessSummaryItem[];
+  primaryButtonLabel?: string;
+}
 
 interface InquiryPresetState {
   welcomeModalMode: WelcomeModalMode;
@@ -18,6 +35,7 @@ interface InquiryPresetState {
   visitorState: VisitorLeadState;
   savedContact: SessionBusinessContact;
   hasSavedContact: boolean;
+  submissionSuccess: SubmissionSuccessPayload | null;
   setSelectedGrade: (grade: GradeOption) => void;
   saveContact: (
     contact: Omit<SessionBusinessContact, "leadId"> & { leadId?: string }
@@ -28,6 +46,8 @@ interface InquiryPresetState {
   completeWelcomeForSampleGate: () => void;
   openSampleRequest: (grade?: string) => void;
   closeSampleModal: () => void;
+  showSubmissionSuccess: (payload: SubmissionSuccessPayload) => void;
+  closeSubmissionSuccess: () => void;
   scrollToEnquiry: () => void;
 }
 
@@ -50,6 +70,7 @@ export function InquiryProvider({
   const [welcomeModalMode, setWelcomeModalMode] = useState<WelcomeModalMode>("closed");
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<GradeOption>("");
+  const [submissionSuccess, setSubmissionSuccess] = useState<SubmissionSuccessPayload | null>(null);
   const {
     visitorState,
     savedContact,
@@ -87,6 +108,7 @@ export function InquiryProvider({
 
   const openSampleRequest = useCallback(
     (grade?: string) => {
+      setSubmissionSuccess(null);
       if (grade !== undefined) {
         setSelectedGrade(normalizeSampleGrade(grade));
       }
@@ -103,6 +125,14 @@ export function InquiryProvider({
 
   const closeSampleModal = useCallback(() => {
     setIsSampleModalOpen(false);
+  }, []);
+
+  const showSubmissionSuccess = useCallback((payload: SubmissionSuccessPayload) => {
+    setSubmissionSuccess(payload);
+  }, []);
+
+  const closeSubmissionSuccess = useCallback(() => {
+    setSubmissionSuccess(null);
   }, []);
 
   const scrollToEnquiry = useCallback(() => {
@@ -122,6 +152,7 @@ export function InquiryProvider({
         visitorState,
         savedContact,
         hasSavedContact,
+        submissionSuccess,
         setSelectedGrade,
         saveContact,
         markSkippedInitial,
@@ -130,10 +161,13 @@ export function InquiryProvider({
         completeWelcomeForSampleGate,
         openSampleRequest,
         closeSampleModal,
+        showSubmissionSuccess,
+        closeSubmissionSuccess,
         scrollToEnquiry,
       }}
     >
       {children}
+      <SubmissionSuccessModal />
     </InquiryContext.Provider>
   );
 }

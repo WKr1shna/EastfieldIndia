@@ -109,9 +109,14 @@ describe("SampleRequestModal structured address & summary", () => {
     fireEvent.click(screen.getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Sample Request Accepted/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sample Request Received!/i)).toBeInTheDocument();
       expect(screen.getByText(/Request Accepted · Saved/i)).toBeInTheDocument();
+      expect(screen.queryByRole("form", { name: /Request a Sample Form/i })).not.toBeInTheDocument();
     });
+
+    // Clicking Done closes the global confirmation popup
+    fireEvent.click(screen.getByRole("button", { name: /^Done$/i }));
+    expect(screen.queryByText(/Sample Request Received!/i)).not.toBeInTheDocument();
 
     const sentBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body)) as {
       desiredGrade: string;
