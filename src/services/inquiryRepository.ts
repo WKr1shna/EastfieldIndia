@@ -300,7 +300,9 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
         inquiryReferenceId,
         channel: "mongodb",
       };
-    } catch {
+    } catch (err) {
+      const errorName = err instanceof Error ? err.name : "UnknownError";
+      console.error("[EastField Repository] MongoDB persistence failed:", errorName);
       // Strict integrity: when MONGODB_URI is configured and fails, report failure rather than faking success
       return { persisted: false, deduplicated: false, lead: incoming, channel: "ephemeral" };
     }

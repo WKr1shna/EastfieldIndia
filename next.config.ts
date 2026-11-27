@@ -28,6 +28,7 @@ const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://eastfieldindi
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  serverExternalPackages: ["mongoose", "mongodb", "bcryptjs"],
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
