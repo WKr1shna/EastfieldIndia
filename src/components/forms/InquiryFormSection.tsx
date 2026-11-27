@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertCircle, Building, CheckCircle2, Loader2, PackageCheck, Send } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  Building,
+  CheckCircle2,
+  Loader2,
+  PackageCheck,
+  Send,
+} from "lucide-react";
 import { inquirySchema } from "@/validations/inquiry";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
@@ -179,6 +187,22 @@ export function InquiryFormSection() {
                         className="font-medium text-gold-400 transition-colors hover:text-gold-300 hover:underline"
                       >
                         {siteConfig.contactEmail}
+                      </a>
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt className="font-medium tracking-wider text-ivory-300/75 uppercase">
+                      LinkedIn
+                    </dt>
+                    <dd>
+                      <a
+                        href={siteConfig.companyLinkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-medium text-gold-400 transition-colors hover:text-gold-300 hover:underline"
+                      >
+                        <span>EastField India</span>
+                        <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
                       </a>
                     </dd>
                   </div>

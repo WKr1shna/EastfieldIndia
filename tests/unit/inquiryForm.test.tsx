@@ -21,6 +21,10 @@ describe("InquiryFormSection (minimal 4-field General Business Enquiry)", () => 
     );
 
     expect(screen.getByText("10BIPPA9997L1ZM")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /EastField India/i })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/company/eastfieldindia/"
+    );
     expect(screen.getByLabelText(/Company Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Mobile Number/i)).toBeInTheDocument();

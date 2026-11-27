@@ -87,9 +87,10 @@ describe("SampleRequestModal structured address & summary", () => {
     fireEvent.change(screen.getByLabelText(/^City/i), {
       target: { value: "Bengaluru" },
     });
-    fireEvent.change(screen.getByLabelText(/State \/ Province \/ Region/i), {
-      target: { value: "Karnataka" },
-    });
+    const stateInput = screen.getByLabelText(/State \/ Province \/ Region/i);
+    fireEvent.focus(stateInput);
+    fireEvent.change(stateInput, { target: { value: "Karn" } });
+    fireEvent.mouseDown(screen.getByRole("option", { name: "Karnataka" }));
 
     const countryInput = screen.getByLabelText(/^Country/i);
     fireEvent.focus(countryInput);

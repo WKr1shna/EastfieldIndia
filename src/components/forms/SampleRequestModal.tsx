@@ -12,6 +12,7 @@ import {
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { CountryCombobox } from "@/components/ui/CountryCombobox";
+import { StateCombobox } from "@/components/ui/StateCombobox";
 
 export function SampleRequestModal() {
   const {
@@ -683,7 +684,7 @@ export function SampleRequestModal() {
                     )}
                   </div>
 
-                  {/* State / Province / Region */}
+                  {/* State / Province / Region (Searchable Dropdown) */}
                   <div>
                     <label
                       htmlFor="shipping-state"
@@ -691,25 +692,21 @@ export function SampleRequestModal() {
                     >
                       State / Province / Region <span className="text-red-700">*</span>
                     </label>
-                    <input
+                    <StateCombobox
                       id="shipping-state"
-                      name="state"
-                      type="text"
-                      required
-                      autoComplete="address-level1"
+                      country={country}
                       value={stateRegion}
-                      onChange={(e) => {
-                        setStateRegion(e.target.value);
+                      hasError={Boolean(fieldErrors["shippingAddress.state"])}
+                      errorId={
+                        fieldErrors["shippingAddress.state"] ? "err-shipping-state" : undefined
+                      }
+                      onChange={(nextState) => {
+                        setStateRegion(nextState);
                         clearFieldError("shippingAddress.state");
                       }}
-                      aria-invalid={Boolean(fieldErrors["shippingAddress.state"])}
-                      placeholder="State, province, or region"
-                      className={`${inputClass} ${
-                        fieldErrors["shippingAddress.state"] ? "border-red-500" : "border-ivory-300"
-                      }`}
                     />
                     {fieldErrors["shippingAddress.state"] && (
-                      <p className="mt-1 text-xs text-red-700">
+                      <p id="err-shipping-state" className="mt-1 text-xs text-red-700">
                         {fieldErrors["shippingAddress.state"]}
                       </p>
                     )}

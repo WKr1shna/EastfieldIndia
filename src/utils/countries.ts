@@ -206,3 +206,101 @@ export function validatePostalCodeForCountry(
 
   return { valid: true };
 }
+
+export const STATES_BY_COUNTRY: Record<string, readonly string[]> = {
+  India: [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ],
+  "United States": [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+    "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois",
+    "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+    "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana",
+    "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York",
+    "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+    "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+    "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+  ],
+  "United Arab Emirates": [
+    "Abu Dhabi",
+    "Ajman",
+    "Dubai",
+    "Fujairah",
+    "Ras Al Khaimah",
+    "Sharjah",
+    "Umm Al Quwain",
+  ],
+  "United Kingdom": ["England", "Northern Ireland", "Scotland", "Wales", "Greater London"],
+  Canada: [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
+    "Northwest Territories", "Nova Scotia", "Nunavut", "Ontario", "Prince Edward Island",
+    "Quebec", "Saskatchewan", "Yukon",
+  ],
+  Australia: [
+    "Australian Capital Territory", "New South Wales", "Northern Territory", "Queensland",
+    "South Australia", "Tasmania", "Victoria", "Western Australia",
+  ],
+  Germany: [
+    "Baden-Württemberg", "Bavaria", "Berlin", "Brandenburg", "Bremen", "Hamburg", "Hesse",
+    "Lower Saxony", "Mecklenburg-Vorpommern", "North Rhine-Westphalia", "Rhineland-Palatinate",
+    "Saarland", "Saxony", "Saxony-Anhalt", "Schleswig-Holstein", "Thuringia",
+  ],
+  "Saudi Arabia": [
+    "Riyadh", "Makkah", "Madinah", "Eastern Province", "Asir", "Tabuk", "Qassim", "Jazan",
+  ],
+  Qatar: ["Doha", "Al Rayyan", "Al Wakrah", "Al Khor", "Umm Salal"],
+  Singapore: ["Central Region", "East Region", "North Region", "North-East Region", "West Region"],
+  Malaysia: [
+    "Johor", "Kedah", "Kelantan", "Kuala Lumpur", "Melaka", "Negeri Sembilan", "Pahang",
+    "Penang", "Perak", "Perlis", "Putrajaya", "Sabah", "Sarawak", "Selangor", "Terengganu",
+  ],
+  Nepal: ["Koshi", "Madhesh", "Bagmati", "Gandaki", "Lumbini", "Karnali", "Sudurpashchim"],
+  Bangladesh: ["Dhaka", "Chattogram", "Rajshahi", "Khulna", "Barishal", "Sylhet", "Rangpur", "Mymensingh"],
+  "Sri Lanka": [
+    "Western", "Central", "Southern", "Northern", "Eastern", "North Western",
+    "North Central", "Uva", "Sabaragamuwa",
+  ],
+};
+
+export function getStatesForCountry(country: string): readonly string[] {
+  const trimmed = country.trim();
+  if (!trimmed) {
+    return STATES_BY_COUNTRY.India;
+  }
+  return STATES_BY_COUNTRY[trimmed] ?? [];
+}

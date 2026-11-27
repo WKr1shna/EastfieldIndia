@@ -25,6 +25,7 @@ export default function HomePage() {
     description: siteConfig.description,
     url: siteConfig.url,
     email: siteConfig.contactEmail,
+    sameAs: [siteConfig.companyLinkedinUrl],
     taxID: siteConfig.gstin,
     address: {
       "@type": "PostalAddress",

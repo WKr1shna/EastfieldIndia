@@ -101,6 +101,17 @@ export function Footer() {
                 <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>{siteConfig.contactEmail}</span>
               </a>
+              <div>
+                <a
+                  href={siteConfig.companyLinkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-gold-400 hover:underline"
+                >
+                  <span>EastField India LinkedIn</span>
+                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                </a>
+              </div>
               <p>Founder: {siteConfig.founder.name}</p>
               <a
                 href={siteConfig.founder.linkedinUrl}
@@ -108,7 +119,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-gold-400 hover:underline"
               >
-                <span>LinkedIn Profile</span>
+                <span>Founder LinkedIn</span>
                 <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
               </a>
             </div>
