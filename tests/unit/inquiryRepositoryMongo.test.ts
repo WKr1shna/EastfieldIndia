@@ -150,7 +150,8 @@ describe("Mongoose schemas, indexes, password hashing, and repository persistenc
     mockSamples.length = 0;
     mockInquiries.length = 0;
     vi.clearAllMocks();
-    process.env.MONGODB_URI = "mongodb+srv://user:pass@cluster0.example.mongodb.net/eastfield";
+    process.env.MONGODB_URI =
+      "mongodb+srv://user:pass@cluster0.example.mongodb.net/eastfield_india";
   });
 
   afterEach(() => {

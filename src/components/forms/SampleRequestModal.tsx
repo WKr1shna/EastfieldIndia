@@ -30,6 +30,7 @@ export function SampleRequestModal() {
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [productType, setProductType] = useState<SampleProductTypeOption | "">("");
+  const [quantity, setQuantity] = useState("");
 
   // Structured shipping address fields
   const [addressLine1, setAddressLine1] = useState("");
@@ -122,6 +123,7 @@ export function SampleRequestModal() {
       skippedInitial: visitorState.skippedInitial,
       desiredGrade: selectedGrade,
       productType,
+      quantity,
       shippingAddress: {
         addressLine1,
         addressLine2,
@@ -561,6 +563,28 @@ export function SampleRequestModal() {
                     {fieldErrors.productType && (
                       <p className="mt-1 text-xs text-red-700">{fieldErrors.productType}</p>
                     )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="sample-quantity"
+                      className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                    >
+                      Target / Sample Quantity{" "}
+                      <span className="font-normal text-ink-500">(Optional)</span>
+                    </label>
+                    <input
+                      id="sample-quantity"
+                      name="quantity"
+                      type="text"
+                      value={quantity}
+                      onChange={(e) => {
+                        setQuantity(e.target.value);
+                        clearFieldError("quantity");
+                      }}
+                      placeholder="e.g., 500 g evaluation pack / 1 MT ongoing volume"
+                      className={`${inputClass} border-ivory-300`}
+                    />
                   </div>
                 </div>
               </div>

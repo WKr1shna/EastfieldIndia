@@ -25,9 +25,9 @@ export function resolveDatabaseName(uri: string): string {
   try {
     const withoutQuery = uri.split("?")[0] || "";
     const afterHost = withoutQuery.replace(/^mongodb(\+srv)?:\/\/[^/]+\/?/, "");
-    return afterHost.trim() || "eastfield";
+    return afterHost.trim() || "eastfield_india";
   } catch {
-    return "eastfield";
+    return "eastfield_india";
   }
 }
 
@@ -40,6 +40,19 @@ function readMongoUri(): string | null {
 
 export function isMongoConfigured(): boolean {
   return Boolean(readMongoUri());
+}
+
+/**
+ * Throws a clear server-side configuration error (without leaking secrets) when MongoDB is required but unset.
+ */
+export function assertMongoConfigured(): string {
+  const uri = readMongoUri();
+  if (!uri) {
+    throw new Error(
+      "Database configuration error: MONGODB_URI environment variable is not set."
+    );
+  }
+  return uri;
 }
 
 /**

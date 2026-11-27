@@ -65,7 +65,7 @@ cp .env.example .env.local
 ```
 
 ### Email & Storage Configuration
-- **MongoDB Atlas (Primary Database)**: Set `MONGODB_URI` (and optional `MONGODB_DB_NAME`, defaulting to `eastfield`) to persist all entry leads, sample requests, and general business enquiries in the indexed `leads` collection with automatic deduplication by `id` and `email`. Keep credentials strictly in `.env.local` and hosting environment variables—never commit secrets to git.
+- **MongoDB Atlas (Primary Database)**: Set `MONGODB_URI` (and optional `MONGODB_DB_NAME`, defaulting to `eastfield_india`) to persist all entry leads, sample requests, and general business enquiries across indexed Mongoose collections (`leads`, `samplerequests`, `contactinquiries`, `products`, `adminusers`) with automatic deduplication by `id` and `email`. Keep credentials strictly in `.env` / `.env.local` and hosting environment variables—never commit secrets to git.
 - **Resend Email**: Set `RESEND_API_KEY`, `INQUIRY_TO_EMAIL`, and `INQUIRY_FROM_EMAIL` to automatically dispatch structured HTML business enquiries and sample requests to your sourcing desk.
 - **Webhook / Local Fallback Persistence**: `sql/schema.sql` provides a reference relational schema if mirroring to SQL. Optionally set `INQUIRY_WEBHOOK_URL` (and `INQUIRY_WEBHOOK_SECRET`) to mirror leads to a webhook/CRM; if `MONGODB_URI` is unset, requests fall back to the built-in non-blocking NDJSON store (`INQUIRY_STORAGE_PATH` / `.data/leads.ndjson`).
 - **Admin Lead Export API**: Set `ADMIN_API_KEY` (minimum 16 characters) to enable authenticated access to `GET /api/admin/leads` (`Authorization: Bearer <ADMIN_API_KEY>`), supporting `?format=csv`, `?requestedSample=true|false`, and `?dateFrom=...&dateTo=...` filters.
