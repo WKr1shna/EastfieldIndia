@@ -197,8 +197,14 @@ export function WelcomeLeadModal() {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold-500/45 bg-forest-800/90 text-xs font-bold tracking-wider text-gold-400">
-                EF
+              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-gold-500/45 bg-forest-900 shadow-xs">
+                <Image
+                  src="/images/brand/eastfield-logo.png"
+                  alt="EastField India Logo"
+                  width={40}
+                  height={40}
+                  className="h-full w-full object-cover"
+                />
               </span>
               <span className="text-xs font-semibold tracking-[0.16em] text-ivory-100 uppercase">
                 {siteConfig.name}

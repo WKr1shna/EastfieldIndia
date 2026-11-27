@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { siteConfig } from "@/config/site";
 
 interface BrandMarkProps {
@@ -12,14 +13,20 @@ export function BrandMark({ variant = "dark", subtitle = siteConfig.subtitle }: 
   return (
     <span className="inline-flex items-center gap-3 select-none">
       <span
-        aria-hidden="true"
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold tracking-wider transition-colors ${
+        className={`relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border shadow-xs transition-colors ${
           isDarkSurface
-            ? "border-gold-500/45 bg-forest-800/90 text-gold-400"
-            : "border-forest-800/20 bg-forest-900 text-gold-400"
+            ? "border-gold-500/45 bg-forest-900"
+            : "border-forest-800/20 bg-ivory-100"
         }`}
       >
-        {siteConfig.shortMark}
+        <Image
+          src="/images/brand/eastfield-logo.png"
+          alt="EastField India Lotus Brand Emblem"
+          width={40}
+          height={40}
+          priority
+          className="h-full w-full object-cover"
+        />
       </span>
       <span className="flex flex-col leading-tight">
         <span
