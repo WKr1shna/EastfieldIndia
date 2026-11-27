@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlertCircle, Edit3, Loader2, PackageCheck, Send, X } from "lucide-react";
+import { Edit3, Loader2, PackageCheck, Send, X } from "lucide-react";
 import {
   SAMPLE_GRADES,
   SAMPLE_PRODUCT_TYPES,
@@ -13,6 +13,7 @@ import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
 import { CountryCombobox } from "@/components/ui/CountryCombobox";
 import { StateCombobox } from "@/components/ui/StateCombobox";
+import { FormAlert } from "@/components/ui/FormAlert";
 
 export function SampleRequestModal() {
   const {
@@ -48,6 +49,7 @@ export function SampleRequestModal() {
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
 
@@ -55,6 +57,7 @@ export function SampleRequestModal() {
     if (!isSampleModalOpen) {
       const resetRaf = window.requestAnimationFrame(() => {
         setStatus("idle");
+        setIsDuplicate(false);
         setServerMessage("");
         setFieldErrors({});
       });
@@ -155,6 +158,7 @@ export function SampleRequestModal() {
     }
 
     setFieldErrors({});
+    setIsDuplicate(false);
     setStatus("submitting");
 
     try {
@@ -166,6 +170,7 @@ export function SampleRequestModal() {
 
       const data = (await response.json()) as {
         ok?: boolean;
+        duplicate?: boolean;
         referenceId?: string;
         sampleReferenceId?: string;
         message?: string;
@@ -176,6 +181,7 @@ export function SampleRequestModal() {
 
       if (!response.ok || !data.ok || data.delivery?.persisted === false) {
         if (data.fieldErrors) setFieldErrors(data.fieldErrors);
+        setIsDuplicate(Boolean(response.status === 409 || data.duplicate));
         setStatus("error");
         setServerMessage(data.error || "Unable to submit your sample request right now.");
         return;
@@ -285,13 +291,7 @@ export function SampleRequestModal() {
               </div>
 
               {status === "error" && serverMessage && (
-                <div
-                  role="alert"
-                  className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900"
-                >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700" aria-hidden="true" />
-                  <span>{serverMessage}</span>
-                </div>
+                <FormAlert message={serverMessage} isDuplicate={isDuplicate} />
               )}
 
               {/* 1. Customer Details */}

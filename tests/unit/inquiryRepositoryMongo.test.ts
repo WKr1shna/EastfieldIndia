@@ -114,7 +114,9 @@ vi.mock("@/models", async () => {
     },
     ContactInquiryModel: {
       schema: actual.ContactInquiryModel.schema,
-      findOne: vi.fn(async () => null),
+      findOne: vi.fn(async (query: { email?: string }) => {
+        return mockInquiries.find((doc) => doc.email === query.email) ?? null;
+      }),
       create: vi.fn(async (doc: Record<string, unknown>) => {
         const now = new Date();
         const created = {
@@ -252,6 +254,54 @@ describe("Mongoose schemas, indexes, password hashing, and repository persistenc
     });
     expect(enquiry.persisted).toBe(true);
     expect(enquiry.inquiryReferenceId).toBe("EFI-20261127-INQ1");
+    expect(mockInquiries).toHaveLength(1);
+
+    // Duplicate entry lead with same email is blocked cleanly
+    const dupLead = await upsertLeadRecord({
+      ...baseLead,
+      id: "EF-20261127-DUPLEAD",
+    });
+    expect(dupLead.persisted).toBe(false);
+    expect(dupLead.duplicateBlocked).toBe(true);
+    expect(dupLead.duplicateCode).toBe("DUPLICATE_ENTRY_LEAD");
+    expect(mockLeads).toHaveLength(2);
+
+    // Duplicate sample request (same email + grade + productType) is blocked cleanly
+    const dupSample = await upsertLeadRecord({
+      ...baseLead,
+      id: "EF-20261127-DUPSAMPLE",
+      requestedSample: true,
+      sampleDetails: {
+        desiredGrade: "6 Suta",
+        productType: "Handpicked",
+        quantity: "500 kg",
+        shippingAddress: {
+          addressLine1: "42 MG Road",
+          addressLine2: "",
+          city: "Bengaluru",
+          state: "Karnataka",
+          postalCode: "560001",
+          country: "India",
+        },
+        additionalRequirements: "Sample carton",
+      },
+    });
+    expect(dupSample.persisted).toBe(false);
+    expect(dupSample.duplicateBlocked).toBe(true);
+    expect(dupSample.duplicateCode).toBe("DUPLICATE_SAMPLE_REQUEST");
+    expect(mockSamples).toHaveLength(1);
+
+    // Duplicate general contact inquiry is blocked cleanly
+    const dupEnquiry = await upsertLeadRecord({
+      ...baseLead,
+      id: "EF-20261127-DUPINQ",
+      email: "buyer@otherfirm.com",
+      leadSource: "general_enquiry",
+      additionalMessage: "Interested in 5+ Suta wholesale supply.",
+    });
+    expect(dupEnquiry.persisted).toBe(false);
+    expect(dupEnquiry.duplicateBlocked).toBe(true);
+    expect(dupEnquiry.duplicateCode).toBe("DUPLICATE_INQUIRY");
     expect(mockInquiries).toHaveLength(1);
 
     const paged = await queryPaginatedLeads({ page: 1, limit: 10 });

@@ -118,6 +118,27 @@ describe("SampleRequestModal structured address & summary", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Done$/i }));
     expect(screen.queryByText(/Sample Request Received!/i)).not.toBeInTheDocument();
 
+    // Duplicate sample submission (409) stays on modal with clear duplicate response
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({
+        ok: false,
+        duplicate: true,
+        code: "DUPLICATE_SAMPLE_REQUEST",
+        error:
+          "A sample request for this grade and product type has already been submitted with your email (Reference: EFS-20261127-PRE001).",
+      }),
+    } as Response);
+
+    fireEvent.click(screen.getByRole("button", { name: /Open Sample/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^REQUEST A SAMPLE$/i }));
+
+    expect(
+      await screen.findByText(/A sample request for this grade and product type has already been submitted/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Sample Request Received!/i)).not.toBeInTheDocument();
+
     const sentBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body)) as {
       desiredGrade: string;
       productType: string;

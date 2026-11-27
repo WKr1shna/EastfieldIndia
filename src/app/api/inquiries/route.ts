@@ -139,6 +139,21 @@ export async function POST(request: NextRequest) {
   };
 
   const storage = await upsertLeadRecord(incomingLead);
+  if (storage.duplicateBlocked) {
+    return NextResponse.json(
+      {
+        ok: false,
+        duplicate: true,
+        code: storage.duplicateCode || "DUPLICATE_SUBMISSION",
+        ...(storage.duplicateReferenceId ? { referenceId: storage.duplicateReferenceId } : {}),
+        error:
+          storage.duplicateMessage ||
+          "This submission has already been recorded. No duplicate record was created.",
+      },
+      { status: 409, headers: rateHeaders }
+    );
+  }
+
   if (!storage.persisted) {
     return NextResponse.json(
       {

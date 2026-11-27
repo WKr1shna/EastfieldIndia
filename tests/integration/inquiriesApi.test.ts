@@ -111,6 +111,76 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
       postalCode: "20457",
       country: "Germany",
     });
+
+    // Submitting the exact same sample request again must be rejected with 409 Conflict
+    const dupSampleRes = await POST(
+      createRequest({
+        requestType: "sample",
+        leadId: entryJson.referenceId,
+        name: "Marcus Weber",
+        phone: "+49 30 1234567",
+        company: "Alpen Naturkost GmbH",
+        email: "sourcing@alpennaturkost.de",
+        desiredGrade: "5+ Suta",
+        productType: "Handpicked",
+        shippingAddress: {
+          addressLine1: "Speicherstadt 14",
+          addressLine2: "Kontor 3",
+          city: "Hamburg",
+          state: "Hamburg",
+          postalCode: "20457",
+          country: "Germany",
+        },
+        details: "Requesting sample evaluation.",
+        website: "",
+        formStartedAt: Date.now() - 5000,
+      })
+    );
+    expect(dupSampleRes.status).toBe(409);
+    const dupJson = (await dupSampleRes.json()) as {
+      ok: boolean;
+      duplicate: boolean;
+      code: string;
+      error: string;
+    };
+    expect(dupJson.ok).toBe(false);
+    expect(dupJson.duplicate).toBe(true);
+    expect(dupJson.code).toBe("DUPLICATE_SAMPLE_REQUEST");
+    expect(dupJson.error).toMatch(/already been submitted/i);
+  });
+
+  it("blocks duplicate entry_lead and duplicate general_enquiry submissions with 409", async () => {
+    const firstEntry = await POST(
+      createRequest({
+        requestType: "entry_lead",
+        name: "Priya Kapoor",
+        phone: "+91 98111 77889",
+        company: "Lotus Exports",
+        email: "priya@lotus.in",
+        leadSource: "entry_popup",
+        website: "",
+        formStartedAt: Date.now() - 5000,
+      })
+    );
+    expect(firstEntry.status).toBe(201);
+
+    const dupEntry = await POST(
+      createRequest({
+        requestType: "entry_lead",
+        name: "Priya Kapoor",
+        phone: "+91 98111 77889",
+        company: "Lotus Exports",
+        email: "priya@lotus.in",
+        leadSource: "entry_popup",
+        website: "",
+        formStartedAt: Date.now() - 5000,
+      })
+    );
+    expect(dupEntry.status).toBe(409);
+    const dupEntryJson = (await dupEntry.json()) as { ok: boolean; duplicate: boolean; code: string };
+    expect(dupEntryJson.ok).toBe(false);
+    expect(dupEntryJson.duplicate).toBe(true);
+    expect(dupEntryJson.code).toBe("DUPLICATE_ENTRY_LEAD");
   });
 
   it("protects admin leads endpoint with Bearer auth and supports CSV export + filtering", async () => {

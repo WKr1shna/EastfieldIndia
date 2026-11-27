@@ -51,9 +51,18 @@ export interface StoredLead {
   sourceIpHash: string;
 }
 
+export type DuplicateCode =
+  | "DUPLICATE_ENTRY_LEAD"
+  | "DUPLICATE_SAMPLE_REQUEST"
+  | "DUPLICATE_INQUIRY";
+
 export interface StorageOutcome {
   persisted: boolean;
   deduplicated: boolean;
+  duplicateBlocked?: boolean;
+  duplicateCode?: DuplicateCode;
+  duplicateReferenceId?: string;
+  duplicateMessage?: string;
   lead: StoredLead;
   sampleReferenceId?: string;
   inquiryReferenceId?: string;
@@ -164,6 +173,84 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
         ],
       });
 
+      const isPureLeadCapture =
+        !incoming.requestedSample && incoming.leadSource !== "general_enquiry";
+
+      // Block duplicate entry/popup lead submissions cleanly when Lead already exists
+      if (existingLead && isPureLeadCapture) {
+        return {
+          persisted: false,
+          deduplicated: true,
+          duplicateBlocked: true,
+          duplicateCode: "DUPLICATE_ENTRY_LEAD",
+          duplicateReferenceId: existingLead.leadId,
+          duplicateMessage: `Your business details are already registered with EastField India (Reference: ${existingLead.leadId}). You can continue exploring or request a sample directly.`,
+          lead: incoming,
+          channel: "mongodb",
+        };
+      }
+
+      const dedupeWindowStart = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const rapidWindowStart = new Date(Date.now() - 60 * 1000);
+
+      // Check for duplicate sample request or duplicate contact inquiry BEFORE mutating Lead
+      if (incoming.requestedSample && incoming.sampleDetails) {
+        const gradeCode = normalizeSampleGradeCode(incoming.sampleDetails.desiredGrade);
+        const rawProductType = incoming.sampleDetails.productType;
+        if (rawProductType !== "Regular" && rawProductType !== "Handpicked") {
+          throw new Error(`Invalid product type: ${rawProductType}`);
+        }
+        const productType: "Regular" | "Handpicked" = rawProductType;
+
+        const existingSample = await SampleRequestModel.findOne({
+          email: normalizedEmail,
+          desiredGrade: gradeCode,
+          productType,
+          $or: [
+            { status: { $in: ["pending", "reviewed"] } },
+            { createdAt: { $gte: dedupeWindowStart } },
+          ],
+        });
+
+        if (existingSample) {
+          return {
+            persisted: false,
+            deduplicated: true,
+            duplicateBlocked: true,
+            duplicateCode: "DUPLICATE_SAMPLE_REQUEST",
+            duplicateReferenceId: existingSample.referenceId,
+            duplicateMessage: `A sample request for this grade and product type has already been submitted with your email (Reference: ${existingSample.referenceId}). Our team is already reviewing your request.`,
+            lead: incoming,
+            channel: "mongodb",
+          };
+        }
+      } else if (incoming.leadSource === "general_enquiry") {
+        const normalizedMsg = (incoming.additionalMessage || "").trim();
+        const existingInquiry = await ContactInquiryModel.findOne({
+          email: normalizedEmail,
+          $or: [
+            {
+              message: normalizedMsg,
+              status: { $in: ["new", "reviewed"] },
+            },
+            { createdAt: { $gte: rapidWindowStart } },
+          ],
+        });
+
+        if (existingInquiry) {
+          return {
+            persisted: false,
+            deduplicated: true,
+            duplicateBlocked: true,
+            duplicateCode: "DUPLICATE_INQUIRY",
+            duplicateReferenceId: existingInquiry.referenceId,
+            duplicateMessage: `We have already received this enquiry from your email (Reference: ${existingInquiry.referenceId}). Our team will connect with you shortly.`,
+            lead: incoming,
+            channel: "mongodb",
+          };
+        }
+      }
+
       let leadDoc = existingLead;
       let deduplicated = false;
 
@@ -201,75 +288,45 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
 
       let sampleReferenceId: string | undefined;
       let inquiryReferenceId: string | undefined;
-      const dedupeWindowStart = new Date(Date.now() - 60 * 1000);
 
       if (incoming.requestedSample && incoming.sampleDetails) {
         const gradeCode = normalizeSampleGradeCode(incoming.sampleDetails.desiredGrade);
-        const rawProductType = incoming.sampleDetails.productType;
-        if (rawProductType !== "Regular" && rawProductType !== "Handpicked") {
-          throw new Error(`Invalid product type: ${rawProductType}`);
-        }
-        const productType: "Regular" | "Handpicked" = rawProductType;
-
-        const recentDuplicate = await SampleRequestModel.findOne({
+        const productType = incoming.sampleDetails.productType as "Regular" | "Handpicked";
+        const sampleRef = `EFS-${incoming.id.replace(/^EF-/, "")}`;
+        const createdSample = await SampleRequestModel.create({
+          referenceId: sampleRef,
+          leadId: leadDoc._id,
+          leadCode: leadDoc.leadId,
+          fullName: leadDoc.fullName,
+          mobile: leadDoc.mobile,
+          companyName: leadDoc.companyName,
           email: normalizedEmail,
           desiredGrade: gradeCode,
           productType,
-          "shippingAddress.addressLine1": incoming.sampleDetails.shippingAddress.addressLine1,
-          createdAt: { $gte: dedupeWindowStart },
+          quantity: incoming.sampleDetails.quantity || "",
+          additionalRequirements: incoming.sampleDetails.additionalRequirements || "",
+          shippingAddress: incoming.sampleDetails.shippingAddress,
+          status: "pending",
+          sourceIpHash: incoming.sourceIpHash,
         });
-
-        if (recentDuplicate) {
-          sampleReferenceId = recentDuplicate.referenceId;
-          deduplicated = true;
-        } else {
-          const sampleRef = `EFS-${incoming.id.replace(/^EF-/, "")}`;
-          const createdSample = await SampleRequestModel.create({
-            referenceId: sampleRef,
-            leadId: leadDoc._id,
-            leadCode: leadDoc.leadId,
-            fullName: leadDoc.fullName,
-            mobile: leadDoc.mobile,
-            companyName: leadDoc.companyName,
-            email: normalizedEmail,
-            desiredGrade: gradeCode,
-            productType,
-            quantity: incoming.sampleDetails.quantity || "",
-            additionalRequirements: incoming.sampleDetails.additionalRequirements || "",
-            shippingAddress: incoming.sampleDetails.shippingAddress,
-            status: "pending",
-            sourceIpHash: incoming.sourceIpHash,
-          });
-          sampleReferenceId = createdSample.referenceId;
-        }
+        sampleReferenceId = createdSample.referenceId;
       } else if (incoming.leadSource === "general_enquiry") {
-        const recentDuplicate = await ContactInquiryModel.findOne({
+        const inquiryRef = `EFI-${incoming.id.replace(/^EF-/, "")}`;
+        const createdInquiry = await ContactInquiryModel.create({
+          referenceId: inquiryRef,
+          leadId: leadDoc._id,
+          leadCode: leadDoc.leadId,
+          name: leadDoc.fullName,
           email: normalizedEmail,
+          mobile: leadDoc.mobile,
+          companyName: leadDoc.companyName,
+          subject: incoming.subject || "General Business Enquiry",
           message: incoming.additionalMessage || "",
-          createdAt: { $gte: dedupeWindowStart },
+          source: "contact_form",
+          status: "new",
+          sourceIpHash: incoming.sourceIpHash,
         });
-
-        if (recentDuplicate) {
-          inquiryReferenceId = recentDuplicate.referenceId;
-          deduplicated = true;
-        } else {
-          const inquiryRef = `EFI-${incoming.id.replace(/^EF-/, "")}`;
-          const createdInquiry = await ContactInquiryModel.create({
-            referenceId: inquiryRef,
-            leadId: leadDoc._id,
-            leadCode: leadDoc.leadId,
-            name: leadDoc.fullName,
-            email: normalizedEmail,
-            mobile: leadDoc.mobile,
-            companyName: leadDoc.companyName,
-            subject: incoming.subject || "General Business Enquiry",
-            message: incoming.additionalMessage || "",
-            source: "contact_form",
-            status: "new",
-            sourceIpHash: incoming.sourceIpHash,
-          });
-          inquiryReferenceId = createdInquiry.referenceId;
-        }
+        inquiryReferenceId = createdInquiry.referenceId;
       }
 
       const savedLead: StoredLead = {
@@ -326,8 +383,64 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
     let deduplicated = false;
 
     if (matchIndex !== -1) {
+      const prev = existing[matchIndex];
+      const isPureLeadCapture =
+        !incoming.requestedSample && incoming.leadSource !== "general_enquiry";
+
+      if (isPureLeadCapture) {
+        return {
+          persisted: false,
+          deduplicated: true,
+          duplicateBlocked: true,
+          duplicateCode: "DUPLICATE_ENTRY_LEAD",
+          duplicateReferenceId: prev.id,
+          duplicateMessage: `Your business details are already registered with EastField India (Reference: ${prev.id}). You can continue exploring or request a sample directly.`,
+          lead: incoming,
+          channel: "file",
+        };
+      }
+
+      if (
+        incoming.requestedSample &&
+        incoming.sampleDetails &&
+        prev.requestedSample &&
+        prev.sampleDetails &&
+        prev.sampleDetails.desiredGrade === incoming.sampleDetails.desiredGrade &&
+        prev.sampleDetails.productType === incoming.sampleDetails.productType
+      ) {
+        return {
+          persisted: false,
+          deduplicated: true,
+          duplicateBlocked: true,
+          duplicateCode: "DUPLICATE_SAMPLE_REQUEST",
+          duplicateReferenceId: prev.id,
+          duplicateMessage: `A sample request for this grade and product type has already been submitted with your email (Reference: ${prev.id}). Our team is already reviewing your request.`,
+          lead: incoming,
+          channel: "file",
+        };
+      }
+
+      if (
+        incoming.leadSource === "general_enquiry" &&
+        prev.leadSource === "general_enquiry" &&
+        !prev.requestedSample &&
+        (prev.additionalMessage || "").trim().toLowerCase() ===
+          (incoming.additionalMessage || "").trim().toLowerCase()
+      ) {
+        return {
+          persisted: false,
+          deduplicated: true,
+          duplicateBlocked: true,
+          duplicateCode: "DUPLICATE_INQUIRY",
+          duplicateReferenceId: prev.id,
+          duplicateMessage: `We have already received this enquiry from your email (Reference: ${prev.id}). Our team will connect with you shortly.`,
+          lead: incoming,
+          channel: "file",
+        };
+      }
+
       deduplicated = true;
-      savedLead = mergeLeadRecord(existing[matchIndex], incoming);
+      savedLead = mergeLeadRecord(prev, incoming);
       existing[matchIndex] = savedLead;
     } else {
       existing.push(savedLead);

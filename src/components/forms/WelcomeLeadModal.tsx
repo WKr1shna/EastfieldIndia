@@ -3,10 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AlertCircle, ArrowRight, Loader2, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Loader2, ShieldCheck, X } from "lucide-react";
 import { entryLeadSchema } from "@/validations/inquiry";
 import { siteConfig } from "@/config/site";
 import { useInquiryPreset } from "@/components/ui/InquiryContext";
+import { FormAlert } from "@/components/ui/FormAlert";
 
 export function WelcomeLeadModal() {
   const {
@@ -24,7 +25,8 @@ export function WelcomeLeadModal() {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
   const [formStartedAt, setFormStartedAt] = useState<number>(() => Date.now());
   const firstInputRef = useRef<HTMLInputElement | null>(null);
@@ -36,6 +38,7 @@ export function WelcomeLeadModal() {
     if (!isOpen) {
       const resetRaf = window.requestAnimationFrame(() => {
         setStatus("idle");
+        setIsDuplicate(false);
         setServerMessage("");
         setFieldErrors({});
       });
@@ -111,6 +114,7 @@ export function WelcomeLeadModal() {
     }
 
     setFieldErrors({});
+    setIsDuplicate(false);
     setStatus("submitting");
 
     try {
@@ -122,6 +126,7 @@ export function WelcomeLeadModal() {
 
       const data = (await response.json()) as {
         ok?: boolean;
+        duplicate?: boolean;
         referenceId?: string;
         message?: string;
         error?: string;
@@ -131,6 +136,7 @@ export function WelcomeLeadModal() {
 
       if (!response.ok || !data.ok || data.delivery?.persisted === false) {
         if (data.fieldErrors) setFieldErrors(data.fieldErrors);
+        setIsDuplicate(Boolean(response.status === 409 || data.duplicate));
         setStatus("error");
         setServerMessage(data.error || "Unable to save your details right now.");
         return;
@@ -281,13 +287,7 @@ export function WelcomeLeadModal() {
               </div>
 
               {status === "error" && serverMessage && (
-                <div
-                  role="alert"
-                  className="mb-4 flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 px-3.5 py-2.5 text-xs text-red-900"
-                >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700" aria-hidden="true" />
-                  <span>{serverMessage}</span>
-                </div>
+                <FormAlert message={serverMessage} isDuplicate={isDuplicate} compact />
               )}
 
               <div className="grid gap-3.5 sm:grid-cols-2">
