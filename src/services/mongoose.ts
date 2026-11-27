@@ -31,8 +31,15 @@ export function resolveDatabaseName(uri: string): string {
   }
 }
 
+function readMongoUri(): string | null {
+  const raw = process.env.MONGODB_URI?.trim();
+  if (!raw) return null;
+  const cleaned = raw.replace(/^["']|["']$/g, "").trim();
+  return cleaned || null;
+}
+
 export function isMongoConfigured(): boolean {
-  return Boolean(process.env.MONGODB_URI?.trim());
+  return Boolean(readMongoUri());
 }
 
 /**
@@ -40,7 +47,7 @@ export function isMongoConfigured(): boolean {
  * and serverless invocations. Handles disconnects gracefully without leaking secrets.
  */
 export async function connectToDatabase(): Promise<typeof mongoose | null> {
-  const uri = process.env.MONGODB_URI?.trim();
+  const uri = readMongoUri();
   if (!uri) return null;
 
   if (!state.listenersAttached) {
@@ -69,8 +76,8 @@ export async function connectToDatabase(): Promise<typeof mongoose | null> {
     state.promise = mongoose
       .connect(uri, {
         dbName: resolveDatabaseName(uri),
-        maxPoolSize: 15,
-        minPoolSize: 2,
+        maxPoolSize: 10,
+        minPoolSize: 0,
         serverSelectionTimeoutMS: 8000,
         socketTimeoutMS: 20000,
         bufferCommands: false,
@@ -94,7 +101,7 @@ export async function pingMongoDb(): Promise<{
   connected: boolean;
   database: string | null;
 }> {
-  const uri = process.env.MONGODB_URI?.trim();
+  const uri = readMongoUri();
   if (!uri) {
     return { configured: false, connected: false, database: null };
   }
@@ -108,7 +115,9 @@ export async function pingMongoDb(): Promise<{
     }
     await db.admin().ping();
     return { configured: true, connected: true, database: db.databaseName || dbName };
-  } catch {
+  } catch (err) {
+    const errorType = err instanceof Error ? err.name : "UnknownError";
+    console.error("[EastField DB Health] Connection failed:", errorType);
     return { configured: true, connected: false, database: dbName };
   }
 }
