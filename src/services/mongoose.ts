@@ -1,3 +1,4 @@
+import dns from "dns";
 import mongoose from "mongoose";
 
 interface GlobalMongooseState {
@@ -37,6 +38,8 @@ export interface MongoPingResult {
     reason: MongoDiagnosticReason;
     errorName: string;
     errorCode?: number | string;
+    syscall?: string;
+    hostValidFormat?: boolean;
     hint: string;
   };
 }
@@ -78,6 +81,12 @@ export function assertMongoConfigured(): string {
   return uri;
 }
 
+function extractHostSafely(uri?: string | null): string | null {
+  if (!uri) return null;
+  const match = uri.match(/^mongodb(?:\+srv)?:\/\/(?:[^/?]+@)?([^/?]+)/i);
+  return match?.[1] ?? null;
+}
+
 export function classifyMongoError(err: unknown, uri?: string | null): NonNullable<MongoPingResult["diagnostic"]> {
   if (uri && /<db_password>|<password>|<username>|<cluster>/i.test(uri)) {
     return {
@@ -87,9 +96,15 @@ export function classifyMongoError(err: unknown, uri?: string | null): NonNullab
     };
   }
 
-  const errorObj = err as { name?: string; code?: number | string; message?: string } | undefined;
+  const host = extractHostSafely(uri);
+  const hostValidFormat = Boolean(host && /^[a-z0-9.-]+(?::\d+)?(?:,[a-z0-9.-]+(?::\d+)?)*$/i.test(host));
+
+  const errorObj = err as
+    | { name?: string; code?: number | string; syscall?: string; message?: string }
+    | undefined;
   const name = errorObj?.name || "MongoError";
   const code = errorObj?.code;
+  const syscall = errorObj?.syscall;
   const msg = (errorObj?.message || "").toLowerCase();
 
   if (name === "MongoParseError" || msg.includes("invalid scheme") || msg.includes("unescaped")) {
@@ -125,7 +140,11 @@ export function classifyMongoError(err: unknown, uri?: string | null): NonNullab
       reason: "dns_resolution_failed",
       errorName: name,
       ...(code !== undefined ? { errorCode: code } : {}),
-      hint: "DNS/SRV lookup for the Atlas cluster hostname failed.",
+      ...(syscall ? { syscall } : {}),
+      ...(uri ? { hostValidFormat } : {}),
+      hint: hostValidFormat
+        ? "Atlas cluster hostname was not found in DNS even via public DNS servers. Double-check the exact cluster hostname in Vercel MONGODB_URI for typos (e.g. cluster0.2hoct2c.mongodb.net)."
+        : "The cluster hostname inside Vercel MONGODB_URI appears malformed (contains spaces, extra characters, or wrong format).",
     };
   }
 
@@ -199,7 +218,14 @@ async function openMongooseConnection(uri: string): Promise<typeof mongoose> {
     ) {
       throw firstErr;
     }
-    // Single brief retry for transient cold-start serverless network hiccups
+    if (diag.reason === "dns_resolution_failed") {
+      try {
+        dns.setServers(["1.1.1.1", "8.8.8.8"]);
+      } catch {
+        // Ignore if runtime restricts changing DNS resolvers
+      }
+    }
+    // Single brief retry for transient cold-start serverless network or SRV DNS hiccups
     await new Promise((r) => setTimeout(r, 250));
     return mongoose.connect(uri, options);
   }
