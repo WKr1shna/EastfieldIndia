@@ -23,6 +23,7 @@ export interface ShippingAddressRecord {
 }
 
 export interface SampleDetailsRecord {
+  gstNumber: string;
   desiredGrade: string;
   productType: "Regular" | "Handpicked" | string;
   quantity?: string;
@@ -301,6 +302,7 @@ export async function upsertLeadRecord(incoming: StoredLead): Promise<StorageOut
           mobile: leadDoc.mobile,
           companyName: leadDoc.companyName,
           email: normalizedEmail,
+          gstNumber: incoming.sampleDetails.gstNumber.trim().toUpperCase(),
           desiredGrade: gradeCode,
           productType,
           quantity: incoming.sampleDetails.quantity || "",
@@ -528,6 +530,7 @@ export async function queryPaginatedLeads(
         requestedSample: Boolean(sample),
         sampleDetails: sample
           ? {
+              gstNumber: sample.gstNumber || "",
               desiredGrade: sample.desiredGrade,
               productType: sample.productType,
               quantity: sample.quantity || "",
@@ -739,6 +742,7 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     "Skipped Initial",
     "Submitted Details",
     "Requested Sample",
+    "GST No.",
     "Desired Grade",
     "Product Type",
     "Address Line 1",
@@ -763,6 +767,7 @@ export function serializeLeadsToCsv(leads: StoredLead[]): string {
     lead.skippedInitial,
     lead.submittedDetails,
     lead.requestedSample,
+    lead.sampleDetails?.gstNumber ?? "",
     lead.sampleDetails?.desiredGrade ?? "",
     lead.sampleDetails?.productType ?? "",
     lead.sampleDetails?.shippingAddress?.addressLine1 ?? "",

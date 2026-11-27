@@ -90,8 +90,11 @@ describe("Entry Welcome Modal & Gated Sample Flow (Visitors A, B, C)", () => {
       expect(screen.getByText(/Priya Nair · Lotus Exports/i)).toBeInTheDocument();
     });
 
-    // Select Desired Makhana Grade, Product Type, and Shipping Address before submitting
+    // Fill GST No., Desired Makhana Grade, Product Type, and Shipping Address before submitting
     const dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(/GST No\./i), {
+      target: { value: "10BIPPA9997L1ZM" },
+    });
     fireEvent.change(within(dialog).getByLabelText(/Desired Makhana Grade/i), {
       target: { value: "5+ Suta" },
     });
@@ -138,6 +141,9 @@ describe("Entry Welcome Modal & Gated Sample Flow (Visitors A, B, C)", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Done$/i }));
     fireEvent.click(screen.getByRole("button", { name: /Request a Sample/i }));
     const retryDialog = await screen.findByRole("dialog");
+    fireEvent.change(within(retryDialog).getByLabelText(/GST No\./i), {
+      target: { value: "10BIPPA9997L1ZM" },
+    });
     fireEvent.change(within(retryDialog).getByLabelText(/Desired Makhana Grade/i), {
       target: { value: "6 Suta" },
     });

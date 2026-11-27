@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
     requestedSample: isSample,
     sampleDetails: isSample
       ? {
+          gstNumber: sanitizeText(data.gstNumber).toUpperCase(),
           desiredGrade: data.desiredGrade,
           productType: data.productType,
           quantity: sanitizeText(data.quantity || ""),

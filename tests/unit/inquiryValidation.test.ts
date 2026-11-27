@@ -27,6 +27,7 @@ describe("inquirySchema lead, sample & shipping address validation", () => {
     name: "Rohan Verma",
     phone: "+44 20 7946 0958",
     email: "rohan@vermasnacks.co.uk",
+    gstNumber: "GB123456789",
     desiredGrade: "5+ Suta" as const,
     productType: "Handpicked" as const,
     shippingAddress: ukAddress,
@@ -68,6 +69,7 @@ describe("inquirySchema lead, sample & shipping address validation", () => {
 
     const goodIndiaPin = inquirySchema.safeParse({
       ...validSamplePayload,
+      gstNumber: "10bippa9997l1zm",
       shippingAddress: {
         addressLine1: "Plot 12, Sector 4",
         addressLine2: "",
@@ -78,15 +80,36 @@ describe("inquirySchema lead, sample & shipping address validation", () => {
       },
     });
     expect(goodIndiaPin.success).toBe(true);
+    if (goodIndiaPin.success && goodIndiaPin.data.requestType === "sample") {
+      expect(goodIndiaPin.data.gstNumber).toBe("10BIPPA9997L1ZM");
+    }
+
+    const badIndiaGst = inquirySchema.safeParse({
+      ...validSamplePayload,
+      gstNumber: "INVALIDGST12",
+      shippingAddress: {
+        addressLine1: "Plot 12, Sector 4",
+        addressLine2: "",
+        city: "Purnea",
+        state: "Bihar",
+        postalCode: "854301",
+        country: "India",
+      },
+    });
+    expect(badIndiaGst.success).toBe(false);
+    if (!badIndiaGst.success) {
+      expect(badIndiaGst.error.issues.map((i) => i.path.join("."))).toContain("gstNumber");
+    }
   });
 
-  it("requires structured shipping address fields and product specs for samples", () => {
+  it("requires structured shipping address fields, gstNumber, and product specs for samples", () => {
     const result = inquirySchema.safeParse({
       requestType: "sample",
       company: "",
       name: "",
       phone: "123",
       email: "bad-email",
+      gstNumber: "",
       desiredGrade: "",
       productType: "",
       shippingAddress: {
@@ -106,6 +129,7 @@ describe("inquirySchema lead, sample & shipping address validation", () => {
       expect(paths).toContain("name");
       expect(paths).toContain("phone");
       expect(paths).toContain("email");
+      expect(paths).toContain("gstNumber");
       expect(paths).toContain("desiredGrade");
       expect(paths).toContain("productType");
       expect(paths).toContain("shippingAddress.addressLine1");

@@ -67,6 +67,7 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
         phone: "+49 30 1234567",
         company: "Alpen Naturkost GmbH",
         email: "sourcing@alpennaturkost.de",
+        gstNumber: "DE123456789",
         desiredGrade: "5+ Suta",
         productType: "Handpicked",
         shippingAddress: {
@@ -97,10 +98,12 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
     expect(stored.requestedSample).toBe(true);
     expect(stored.submittedDetails).toBe(true);
     const details = stored.sampleDetails as {
+      gstNumber: string;
       desiredGrade: string;
       productType: string;
       shippingAddress: Record<string, string>;
     };
+    expect(details.gstNumber).toBe("DE123456789");
     expect(details.desiredGrade).toBe("5+ Suta");
     expect(details.productType).toBe("Handpicked");
     expect(details.shippingAddress).toEqual({
@@ -121,6 +124,7 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
         phone: "+49 30 1234567",
         company: "Alpen Naturkost GmbH",
         email: "sourcing@alpennaturkost.de",
+        gstNumber: "DE123456789",
         desiredGrade: "5+ Suta",
         productType: "Handpicked",
         shippingAddress: {
@@ -147,6 +151,36 @@ describe("POST /api/inquiries & GET /api/admin/leads", () => {
     expect(dupJson.duplicate).toBe(true);
     expect(dupJson.code).toBe("DUPLICATE_SAMPLE_REQUEST");
     expect(dupJson.error).toMatch(/already been submitted/i);
+
+    // Reject sample request without GST No. with 422 validation error
+    const missingGstRes = await POST(
+      createRequest({
+        requestType: "sample",
+        name: "Aarav Mehta",
+        phone: "+91 98222 11223",
+        company: "Mithila Wholesale",
+        email: "aarav@mithilawholesale.in",
+        desiredGrade: "6 Suta",
+        productType: "Regular",
+        shippingAddress: {
+          addressLine1: "Sector 18",
+          addressLine2: "",
+          city: "Noida",
+          state: "Uttar Pradesh",
+          postalCode: "201301",
+          country: "India",
+        },
+        website: "",
+        formStartedAt: Date.now() - 5000,
+      })
+    );
+    expect(missingGstRes.status).toBe(422);
+    const missingGstJson = (await missingGstRes.json()) as {
+      ok: boolean;
+      fieldErrors?: Record<string, string>;
+    };
+    expect(missingGstJson.ok).toBe(false);
+    expect(missingGstJson.fieldErrors?.gstNumber).toMatch(/GST No\./i);
   });
 
   it("blocks duplicate entry_lead and duplicate general_enquiry submissions with 409", async () => {

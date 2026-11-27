@@ -131,6 +131,14 @@ const SampleRequestSchema = new Schema(
       maxlength: 180,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
+    gstNumber: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+      minlength: 6,
+      maxlength: 20,
+    },
     desiredGrade: {
       type: String,
       enum: SAMPLE_GRADE_CODES,
@@ -182,6 +190,7 @@ SampleRequestSchema.index({ email: 1, createdAt: -1 });
 SampleRequestSchema.index({ status: 1, createdAt: -1 });
 SampleRequestSchema.index({ desiredGrade: 1, productType: 1, createdAt: -1 });
 SampleRequestSchema.index({ "shippingAddress.country": 1, createdAt: -1 });
+SampleRequestSchema.index({ gstNumber: 1, createdAt: -1 });
 SampleRequestSchema.index({ createdAt: -1 });
 
 export type SampleRequestDocument = InferSchemaType<typeof SampleRequestSchema>;

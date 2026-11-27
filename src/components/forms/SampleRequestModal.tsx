@@ -32,6 +32,7 @@ export function SampleRequestModal() {
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
+  const [gstNumber, setGstNumber] = useState("");
   const [productType, setProductType] = useState<SampleProductTypeOption | "">("");
   const [quantity, setQuantity] = useState("");
 
@@ -123,6 +124,7 @@ export function SampleRequestModal() {
       latestVisitAt: visitorState.latestVisitAt,
       leadSource: visitorState.skippedInitial ? ("sample_gate" as const) : ("entry_popup" as const),
       skippedInitial: visitorState.skippedInitial,
+      gstNumber,
       desiredGrade: selectedGrade,
       productType,
       quantity,
@@ -206,6 +208,7 @@ export function SampleRequestModal() {
         .join(", ");
 
       const summaryItems = [
+        { label: "GST No.", value: gstNumber.trim().toUpperCase() },
         { label: "Grade", value: selectedGrade },
         { label: "Product Type", value: productType },
         ...(quantity.trim() ? [{ label: "Quantity", value: quantity.trim() }] : []),
@@ -440,6 +443,39 @@ export function SampleRequestModal() {
                     </div>
                   </div>
                 )}
+
+                <div className="mt-4 border-t border-ivory-200 pt-4">
+                  <label
+                    htmlFor="sample-gst-number"
+                    className="block text-xs font-semibold tracking-wide text-forest-900 uppercase"
+                  >
+                    GST No. <span className="text-red-700">*</span>
+                  </label>
+                  <input
+                    id="sample-gst-number"
+                    name="gstNumber"
+                    type="text"
+                    required
+                    maxLength={20}
+                    value={gstNumber}
+                    onChange={(e) => {
+                      setGstNumber(e.target.value.toUpperCase());
+                      clearFieldError("gstNumber");
+                    }}
+                    aria-invalid={Boolean(fieldErrors.gstNumber)}
+                    placeholder={
+                      !country || country === "India"
+                        ? "15-character GSTIN (e.g., 10BIPPA9997L1ZM)"
+                        : "Business Tax / GST / VAT Registration No."
+                    }
+                    className={`${inputClass} uppercase ${
+                      fieldErrors.gstNumber ? "border-red-500" : "border-ivory-300"
+                    }`}
+                  />
+                  {fieldErrors.gstNumber && (
+                    <p className="mt-1 text-xs text-red-700">{fieldErrors.gstNumber}</p>
+                  )}
+                </div>
               </div>
 
               {/* 2. Product Specification */}
@@ -715,6 +751,7 @@ export function SampleRequestModal() {
                         setCountry(nextCountry);
                         clearFieldError("shippingAddress.country");
                         clearFieldError("shippingAddress.postalCode");
+                        clearFieldError("gstNumber");
                       }}
                     />
                     {fieldErrors["shippingAddress.country"] && (
@@ -745,7 +782,7 @@ export function SampleRequestModal() {
                   className={`${inputClass} border-ivory-300`}
                 />
 
-                {(selectedGrade || productType || hasAddressPreview) && (
+                {(selectedGrade || productType || gstNumber.trim() || hasAddressPreview) && (
                   <div
                     aria-label="Sample selection summary"
                     className="mt-4 rounded-xl border border-gold-500/35 bg-ivory-50 px-4 py-3 text-xs text-forest-900"
@@ -754,6 +791,9 @@ export function SampleRequestModal() {
                       Sample Requested
                     </p>
                     <ul className="mt-1.5 space-y-0.5 font-medium">
+                      {gstNumber.trim() && (
+                        <li>GST No.: {gstNumber.trim().toUpperCase()}</li>
+                      )}
                       <li>Grade: {selectedGrade || "Not selected yet"}</li>
                       <li>Product Type: {productType || "Not selected yet"}</li>
                       {hasAddressPreview && (

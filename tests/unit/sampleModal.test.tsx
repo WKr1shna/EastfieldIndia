@@ -74,7 +74,10 @@ describe("SampleRequestModal structured address & summary", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/Address Line 1/i)).toHaveValue("42 MG Road");
 
-    // Fill specification & structured shipping address including searchable country dropdown
+    // Fill GST No., specification & structured shipping address including searchable country dropdown
+    fireEvent.change(screen.getByLabelText(/GST No\./i), {
+      target: { value: "10bippa9997l1zm" },
+    });
     fireEvent.change(screen.getByLabelText(/Desired Makhana Grade/i), {
       target: { value: "5+ Suta" },
     });
@@ -102,6 +105,7 @@ describe("SampleRequestModal structured address & summary", () => {
     });
 
     expect(screen.getByText(/Sample Requested/i)).toBeInTheDocument();
+    expect(screen.getByText(/GST No\.: 10BIPPA9997L1ZM/i)).toBeInTheDocument();
     expect(screen.getByText(/Grade: 5\+ Suta/i)).toBeInTheDocument();
     expect(screen.getByText(/Product Type: Handpicked/i)).toBeInTheDocument();
     expect(screen.getByText(/42 MG Road, Suite 304, Bengaluru, Karnataka 560001, India/i)).toBeInTheDocument();
@@ -140,10 +144,12 @@ describe("SampleRequestModal structured address & summary", () => {
     expect(screen.queryByText(/Sample Request Received!/i)).not.toBeInTheDocument();
 
     const sentBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body)) as {
+      gstNumber: string;
       desiredGrade: string;
       productType: string;
       shippingAddress: Record<string, string>;
     };
+    expect(sentBody.gstNumber).toBe("10BIPPA9997L1ZM");
     expect(sentBody.desiredGrade).toBe("5+ Suta");
     expect(sentBody.productType).toBe("Handpicked");
     expect(sentBody.shippingAddress).toEqual({

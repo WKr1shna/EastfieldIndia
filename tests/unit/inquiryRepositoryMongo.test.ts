@@ -219,6 +219,7 @@ describe("Mongoose schemas, indexes, password hashing, and repository persistenc
       email: "rohan@deccanfoods.com",
       requestedSample: true,
       sampleDetails: {
+        gstNumber: "29ABCDE1234F1Z5",
         desiredGrade: "6 Suta",
         productType: "Handpicked",
         quantity: "500 kg",
@@ -242,6 +243,7 @@ describe("Mongoose schemas, indexes, password hashing, and repository persistenc
     expect(mockLeads).toHaveLength(1);
     expect(mockSamples).toHaveLength(1);
     expect(mockSamples[0].leadCode).toBe("EF-20261127-MONGO1");
+    expect(mockSamples[0].gstNumber).toBe("29ABCDE1234F1Z5");
     expect(mockSamples[0].desiredGrade).toBe("6");
     expect(mockSamples[0].productType).toBe("Handpicked");
 
@@ -272,6 +274,7 @@ describe("Mongoose schemas, indexes, password hashing, and repository persistenc
       id: "EF-20261127-DUPSAMPLE",
       requestedSample: true,
       sampleDetails: {
+        gstNumber: "29ABCDE1234F1Z5",
         desiredGrade: "6 Suta",
         productType: "Handpicked",
         quantity: "500 kg",

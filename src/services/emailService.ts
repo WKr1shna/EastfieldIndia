@@ -39,6 +39,7 @@ export async function sendInquiryNotification(lead: StoredLead): Promise<EmailOu
     ["Lead Source", lead.leadSource],
     ...(lead.requestedSample && lead.sampleDetails
       ? ([
+          ["GST No.", lead.sampleDetails.gstNumber],
           ["Desired Makhana Grade", lead.sampleDetails.desiredGrade],
           ["Product Type", lead.sampleDetails.productType],
           ["Address Line 1", lead.sampleDetails.shippingAddress.addressLine1],

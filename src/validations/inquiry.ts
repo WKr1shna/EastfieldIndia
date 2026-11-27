@@ -144,9 +144,22 @@ export const generalEnquirySchema = z.object({
     .default(""),
 });
 
+export const INDIAN_GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
 export const sampleRequestSchema = z.object({
   ...mandatoryLeadFields,
   requestType: z.literal("sample"),
+  gstNumber: z
+    .string({ error: "GST No. is required for sample requests." })
+    .trim()
+    .min(1, "GST No. is required for sample requests.")
+    .min(6, "Please enter a valid GST No. (at least 6 characters).")
+    .max(20, "GST No. must be 20 characters or fewer.")
+    .regex(
+      /^[A-Za-z0-9][A-Za-z0-9-]{5,19}$/,
+      "GST No. may only contain letters, digits, or hyphens."
+    )
+    .transform((val) => val.toUpperCase()),
   desiredGrade: z.enum(SAMPLE_GRADE_VALUES, {
     message: "Please select your desired makhana grade.",
   }),
@@ -174,11 +187,25 @@ const leadUnionSchema = z.discriminatedUnion("requestType", [
   sampleRequestSchema,
 ]);
 
+const validatedLeadSchema = leadUnionSchema.superRefine((data, ctx) => {
+  if (data.requestType !== "sample") return;
+  if (
+    data.shippingAddress.country.trim().toLowerCase() === "india" &&
+    !INDIAN_GSTIN_REGEX.test(data.gstNumber)
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["gstNumber"],
+      message: "Please enter a valid 15-character Indian GSTIN (e.g., 10BIPPA9997L1ZM).",
+    });
+  }
+});
+
 export const inquirySchema = z.preprocess((val) => {
   if (val && typeof val === "object" && !("requestType" in val)) {
     return { ...(val as Record<string, unknown>), requestType: "enquiry" };
   }
   return val;
-}, leadUnionSchema);
+}, validatedLeadSchema);
 
 export type InquiryPayload = z.infer<typeof leadUnionSchema>;
